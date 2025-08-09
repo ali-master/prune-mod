@@ -173,6 +173,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: test-report.junit.xml
+          slug: ali-master/prune-mod
 
       - name: 🟩 Upload coverage
         if: matrix.coverage && !cancelled()
@@ -180,6 +181,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          slug: ali-master/prune-mod
 
   integration:
     name: 🔗 Integration Tests
