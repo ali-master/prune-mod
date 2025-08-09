@@ -364,14 +364,6 @@ We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- Built with ❤️ using [Bun](https://bun.sh/) and [TypeScript](https://www.typescriptlang.org/)
-- Pattern matching powered by [minimatch](https://github.com/isaacs/minimatch)
-- Beautiful CLI output thanks to [consola](https://github.com/unjs/consola)
-- Inspired by the need for lean serverless deployments
-- Special thanks to all contributors and the open-source community
-
 ## 🔗 Related Projects
 
 - [node-prune](https://github.com/tj/node-prune) - Go-based alternative

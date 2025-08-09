@@ -308,7 +308,7 @@
             font-weight="500" 
             fill="white" 
             opacity="0.9">
-        Lightning-fast compression with TypeScript & Bun
+        Lightning-fast compression with TypeScript &amp; Bun
       </text>
     </g>
   </g>
@@ -346,7 +346,7 @@
       
       <!-- Command line with cosmic styling -->
       <text x="0" y="0" font-size="12" font-weight="700" fill="#ffcc02" opacity="0.98">
-        $ prune-mod --event-horizon node_modules
+        $ prune-mod
       </text>
 
       <!-- Compact cosmic output -->
