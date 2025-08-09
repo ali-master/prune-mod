@@ -37,14 +37,6 @@ class Logger {
     console.error(chalk.red(this.formatMessage(...args)));
   }
 
-  warn(...args: any[]): void {
-    console.warn(chalk.yellow(this.formatMessage(...args)));
-  }
-
-  success(...args: any[]): void {
-    console.log(chalk.green(this.formatMessage(...args)));
-  }
-
   debug(...args: any[]): void {
     console.log(chalk.gray(this.formatMessage(...args)));
   }
@@ -55,5 +47,3 @@ class Logger {
 }
 
 export const logger = new Logger();
-
-export default Logger;

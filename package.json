@@ -74,7 +74,7 @@
     "clean": "bunx rimraf dist",
     "clean:all": "bunx rimraf dist node_modules",
     "test:types": "tsc --noEmit",
-    "test": "cross-env CI=true vitest --typecheck",
+    "test": "vitest run",
     "test:junit": "bun run test --reporter=junit --outputFile=test-report.junit.xml",
     "test:watch": "bun run test --watch",
     "test:ui": "bun run test:watch --ui --coverage.enabled=true",
@@ -98,6 +98,10 @@
     "chalk": "^5.5.0",
     "minimatch": "^10.0.3"
   },
+  "peerDependencies": {
+    "chalk": "^5.5.0",
+    "minimatch": "^10.0.3"
+  },
   "devDependencies": {
     "@types/bun": "^1.2.19",
     "@types/minimatch": "^6.0.0",
@@ -105,7 +109,6 @@
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "bunup": "^0.9.2",
-    "cross-env": "^10.0.0",
     "rimraf": "^6.0.1",
     "prettier": "^3.6.2",
     "standard-version": "^9.5.0",
