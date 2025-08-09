@@ -1,0 +1,88 @@
+{
+  "name": "@usex/prune-mod",
+  "version": "0.0.0",
+  "description": "✂️ Reduce node_modules size by up to 60% by removing unnecessary files like docs, tests, and source maps. Optimized for serverless deployments with Up.",
+  "keywords": [
+    "node_modules",
+    "prune-mod",
+    "cli",
+    "npm",
+    "nodejs",
+    "bun"
+  ],
+  "author": {
+    "name": "Ali Torki",
+    "url": "https://github.com/ali-master",
+    "email": "ali_4286@live.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ali-master/prune-mod.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ali-master/prune-mod/issues"
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "homepage": "https://github.com/ali-master/prune-mod#readme",
+  "logo": "https://raw.githubusercontent.com/ali-master/prune-mod/master/assets/logo.svg",
+  "bin": {
+    "prune-mod": "./dist/index.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0",
+    "npm": ">=8.0.0"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "prepare": "bun run build",
+    "build": "bunup",
+    "dev": "bunup --watch",
+    "clean": "bunx rimraf dist",
+    "clean:all": "bunx rimraf dist node_modules",
+    "test:types": "tsc --noEmit",
+    "test": "cross-env CI=true vitest --typecheck",
+    "test:junit": "bun run test --reporter=junit --outputFile=test-report.junit.xml",
+    "test:watch": "bun run test --watch",
+    "test:ui": "bun run test:watch --ui --coverage.enabled=true",
+    "test:coverage": "bun run test run --coverage",
+    "test:debug": "vitest --inspect-brk --pool forks --poolOptions.forks.singleFork",
+    "test:debug:watch": "bun run test:debug --watch --poolOptions.threads.isolate false",
+    "format": "prettier --write src tests",
+    "format:check": "prettier --check src tests",
+    "prepublish:next": "bun run build",
+    "publish:next": "bun publish --access public --tag next",
+    "prepublish:npm": "bun run build",
+    "publish:npm": "bun publish --access public",
+    "prerelease": "bun run test",
+    "release": "bun run build",
+    "postrelease": "standard-version",
+    "release:beta": "bun run build",
+    "postrelease:beta": "standard-version --prerelease beta",
+    "preinstall": "bunx only-allow bun"
+  },
+  "dependencies": {
+    "consola": "^3.4.2",
+    "minimatch": "^10.0.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.19",
+    "@types/minimatch": "^6.0.0",
+    "@types/node": "^24.2.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "bunup": "^0.9.2",
+    "cross-env": "^10.0.0",
+    "rimraf": "^6.0.1",
+    "prettier": "^3.6.2",
+    "standard-version": "^9.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "packageManager": "bun@1.2.19"
+}
