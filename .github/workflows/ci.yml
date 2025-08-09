@@ -201,11 +201,14 @@ jobs:
       - name: 🛠️ Build project
         run: bun run build
 
+      - name: 🔧 Make CLI executable
+        run: chmod +x ./dist/runtime.js
+
       - name: 🧪 Test CLI functionality
         run: |
           # Test basic functionality
-          ./dist/index.js --help
-          ./dist/index.js --version
+          ./dist/runtime.js --help
+          ./dist/runtime.js --version
           
           # Create test environment
           mkdir -p test-env/node_modules/example-package/docs
@@ -214,8 +217,8 @@ jobs:
           
           # Test pruning
           cd test-env
-          ../dist/index.js --dry-run
-          ../dist/index.js
+          ../dist/runtime.js --dry-run
+          ../dist/runtime.js
 
   performance:
     name: ⚡ Performance Benchmarks
@@ -238,6 +241,9 @@ jobs:
       - name: 🛠️ Build project
         run: bun run build
 
+      - name: 🔧 Make CLI executable
+        run: chmod +x ./dist/runtime.js
+
       - name: 📊 Run benchmarks
         run: |
           # Create large test environment
@@ -253,8 +259,8 @@ jobs:
           
           echo "📊 Benchmarking prune-mod performance..."
           cd benchmark-env
-          time ../dist/index.js --dry-run
-          time ../dist/index.js
+          time ../dist/runtime.js --dry-run
+          time ../dist/runtime.js
 
   release:
     name: 🚀 Release
