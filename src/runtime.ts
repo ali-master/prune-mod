@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { getRuntime } from "./utils.ts";
+import { getRuntime } from "./utils";
 import { consola } from "consola";
 
 const currentFilename = fileURLToPath(import.meta.url);
