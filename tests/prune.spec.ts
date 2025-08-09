@@ -23,11 +23,36 @@ describe("Pruner", () => {
   });
 
   afterEach(async () => {
-    // Clean up test directory
+    // Clean up test directory with better error handling
     try {
-      await fs.promises.rm(testDir, { recursive: true, force: true });
+      // First try to change permissions to ensure we can delete
+      const fixPermissions = async (dir: string) => {
+        try {
+          const stats = await fs.promises.stat(dir);
+          if (stats.isDirectory()) {
+            await fs.promises.chmod(dir, 0o755);
+            const items = await fs.promises.readdir(dir);
+            for (const item of items) {
+              await fixPermissions(path.join(dir, item));
+            }
+          } else {
+            await fs.promises.chmod(dir, 0o644);
+          }
+        } catch {
+          // Ignore chmod errors
+        }
+      };
+
+      const exists = await fs.promises.access(testDir).then(
+        () => true,
+        () => false,
+      );
+      if (exists) {
+        await fixPermissions(testDir);
+        await fs.promises.rm(testDir, { recursive: true, force: true });
+      }
     } catch {
-      // Ignore errors
+      // Ignore cleanup errors - the OS will clean up temp files
     }
     // Restore consola after each test
     vi.clearAllMocks();
@@ -181,11 +206,11 @@ describe("Pruner", () => {
 
       // Check that index.js is kept
       const indexPath = path.join(testDir, "test-package", "index.js");
-      await expect(fs.promises.access(indexPath)).resolves.toBe(undefined);
+      expect(fs.existsSync(indexPath)).toBe(true);
 
       // Check that package.json is kept
       const packagePath = path.join(testDir, "test-package", "package.json");
-      await expect(fs.promises.access(packagePath)).resolves.toBe(undefined);
+      expect(fs.existsSync(packagePath)).toBe(true);
     });
 
     it("should respect exception patterns", async () => {
@@ -200,7 +225,7 @@ describe("Pruner", () => {
       await pruner.prune();
 
       // Check that the excepted file is kept
-      await expect(fs.promises.access(keepFile)).resolves.toBe(undefined);
+      expect(fs.existsSync(keepFile)).toBe(true);
 
       // But other README files should be removed
       const readmePath = path.join(testDir, "test-package", "README.md");

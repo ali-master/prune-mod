@@ -1,7 +1,28 @@
 {
   "name": "@usex/prune-mod",
-  "version": "0.0.0",
   "description": "✂️ Reduce node_modules size by up to 60% by removing unnecessary files like docs, tests, and source maps. Optimized for serverless deployments with Up.",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist",
+    "assets",
+    "./dist"
+  ],
+  "module": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
   "keywords": [
     "node_modules",
     "prune-mod",
@@ -23,16 +44,11 @@
   "bugs": {
     "url": "https://github.com/ali-master/prune-mod/issues"
   },
-  "files": [
-    "dist",
-    "assets"
-  ],
   "homepage": "https://github.com/ali-master/prune-mod#readme",
   "logo": "https://raw.githubusercontent.com/ali-master/prune-mod/master/assets/logo.svg",
   "bin": {
-    "prune-mod": "./dist/index.js"
+    "prune-mod": "./dist/runtime.js"
   },
-  "type": "module",
   "engines": {
     "node": ">=18.0.0",
     "bun": ">=1.0.0",

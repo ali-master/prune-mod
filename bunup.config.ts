@@ -1,5 +1,5 @@
 import { defineConfig, type DefineConfigItem } from "bunup";
-import { shims } from "bunup/plugins";
+import { shims, exports } from "bunup/plugins";
 import { readFileSync, existsSync } from "fs";
 import { execSync } from "child_process";
 
@@ -22,7 +22,8 @@ try {
 const buildTime = new Date().toISOString();
 
 // Create footer with version and build info
-const createFooter = () => `
+const createFooter = () =>
+  `
 // 🚀 prune-mod v${version} (${commitHash})
 // Built on ${buildTime}
 // Created with ❤️ by Ali Torki <ali_4286@live.com>
@@ -46,7 +47,7 @@ const BASE_CONFIG: DefineConfigItem = {
  */
 const config = defineConfig([
   {
-    entry: ["src/index.ts"],
+    entry: ["src/runtime.ts"],
     format: ["esm"],
     outDir: "./dist",
     name: "Runtime Detector",
@@ -60,6 +61,22 @@ const config = defineConfig([
     minifySyntax: true,
     footer: createFooter(),
     plugins: [shims()],
+  },
+  {
+    entry: ["src/index.ts"],
+    format: ["esm", "cjs"],
+    outDir: "./dist",
+    name: "Library Build",
+    target: "node",
+    banner: `#!/usr/bin/env node`,
+    clean: true,
+    dts: true,
+    minify: true,
+    minifyWhitespace: true,
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    footer: createFooter(),
+    plugins: [shims(), exports()],
   },
   {
     ...BASE_CONFIG,

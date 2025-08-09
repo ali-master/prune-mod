@@ -14,40 +14,83 @@ describe("CLI Integration Tests", () => {
   });
 
   afterEach(async () => {
-    // Clean up test directory
+    // Clean up test directory with better error handling
     try {
-      await fs.promises.rm(testDir, { recursive: true, force: true });
+      // First try to change permissions to ensure we can delete
+      const fixPermissions = async (dir: string) => {
+        try {
+          const stats = await fs.promises.stat(dir);
+          if (stats.isDirectory()) {
+            await fs.promises.chmod(dir, 0o755);
+            const items = await fs.promises.readdir(dir);
+            for (const item of items) {
+              await fixPermissions(path.join(dir, item));
+            }
+          } else {
+            await fs.promises.chmod(dir, 0o644);
+          }
+        } catch {
+          // Ignore chmod errors
+        }
+      };
+
+      const exists = await fs.promises.access(testDir).then(
+        () => true,
+        () => false,
+      );
+      if (exists) {
+        await fixPermissions(testDir);
+        await fs.promises.rm(testDir, { recursive: true, force: true });
+      }
     } catch {
-      // Ignore errors
+      // Ignore cleanup errors - the OS will clean up temp files
     }
   });
 
   const runCLI = (
     args: string[] = [],
   ): Promise<{ stdout: string; stderr: string; code: number | null }> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const child = spawn("node", [cliPath, ...args], {
         cwd: process.cwd(),
         env: process.env,
+        stdio: ["pipe", "pipe", "pipe"],
       });
 
       let stdout = "";
       let stderr = "";
+      let resolved = false;
 
-      child.stdout.on("data", (data) => {
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          child.kill("SIGTERM");
+          resolve({ stdout: "", stderr: "Timeout after 5s", code: 1 });
+        }
+      }, 5000);
+
+      child.stdout?.on("data", (data) => {
         stdout += data.toString();
       });
 
-      child.stderr.on("data", (data) => {
+      child.stderr?.on("data", (data) => {
         stderr += data.toString();
       });
 
       child.on("close", (code) => {
-        resolve({ stdout, stderr, code });
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve({ stdout, stderr, code });
+        }
       });
 
       child.on("error", (err) => {
-        resolve({ stdout, stderr, code: 1 });
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve({ stdout, stderr: err.message, code: 1 });
+        }
       });
     });
   };
@@ -151,7 +194,7 @@ describe("CLI Integration Tests", () => {
 
       // Check that .md files are kept
       const readmePath = path.join(testDir, "test-package", "README.md");
-      await expect(fs.promises.access(readmePath)).resolves.toBeUndefined();
+      expect(fs.existsSync(readmePath)).toBe(true);
     });
 
     it("should respect multiple exclude patterns", async () => {
@@ -162,8 +205,8 @@ describe("CLI Integration Tests", () => {
       // Check that excluded files are kept
       const readmePath = path.join(testDir, "test-package", "README.md");
       const licensePath = path.join(testDir, "test-package", "LICENSE");
-      await expect(fs.promises.access(readmePath)).resolves.toBeUndefined();
-      await expect(fs.promises.access(licensePath)).resolves.toBeUndefined();
+      expect(fs.existsSync(readmePath)).toBe(true);
+      expect(fs.existsSync(licensePath)).toBe(true);
     });
   });
 
@@ -207,7 +250,7 @@ describe("CLI Integration Tests", () => {
 
       // Check that .md files are kept
       const readmePath = path.join(testDir, "test-package", "README.md");
-      await expect(fs.promises.access(readmePath)).resolves.toBeUndefined();
+      expect(fs.existsSync(readmePath)).toBe(true);
     });
 
     it("should handle all options together", async () => {
@@ -229,7 +272,7 @@ describe("CLI Integration Tests", () => {
 
       // Check that .md files are kept (excluded)
       const readmePath = path.join(testDir, "test-package", "README.md");
-      await expect(fs.promises.access(readmePath)).resolves.toBeUndefined();
+      expect(fs.existsSync(readmePath)).toBe(true);
 
       // Check that .log files are removed (included for pruning)
       await expect(fs.promises.access(logFile)).rejects.toThrow();

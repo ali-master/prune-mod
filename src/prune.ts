@@ -94,6 +94,29 @@ export class Pruner {
   private shouldPrune(filePath: string, entry: fs.Dirent): boolean {
     const name = entry.name;
 
+    // Never prune package.json files
+    if (name === "package.json") {
+      return false;
+    }
+
+    // Check for main entry files from package.json
+    if (!entry.isDirectory()) {
+      const packageDir = path.dirname(filePath);
+      const packageJsonPath = path.join(packageDir, "package.json");
+
+      try {
+        if (fs.existsSync(packageJsonPath)) {
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+          const mainFile = packageJson.main;
+          if (mainFile && path.resolve(packageDir, mainFile) === path.resolve(filePath)) {
+            return false; // Don't prune main entry files
+          }
+        }
+      } catch {
+        // Ignore JSON parsing errors
+      }
+    }
+
     // Check exceptions first
     for (const glob of this.excepts) {
       if (minimatchFn(name, glob)) {

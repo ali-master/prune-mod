@@ -67,7 +67,7 @@ export const DefaultFiles = [
   ".appveyor.yml",
   "tsconfig.json",
   "tslint.json",
-];
+] as const;
 
 export const DefaultDirectories = [
   "__tests__",
@@ -87,7 +87,7 @@ export const DefaultDirectories = [
   ".nyc_output",
   ".circleci",
   ".github",
-];
+] as const;
 
 export const DefaultExtensions = [
   ".markdown",
@@ -98,4 +98,4 @@ export const DefaultExtensions = [
   ".coffee",
   ".tgz",
   ".swp",
-];
+] as const;
