@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/ali-master/prune-mod/compare/v0.0.2...v0.0.3) (2025-08-09)
+
+
+### Features
+
+* add experimental mode for extended file pruning ([86ab339](https://github.com/ali-master/prune-mod/commit/86ab33999f71a22e4c79078a97533e2f41ff5cc7))
+* add workspace support for pruning in monorepo environments ([66edc02](https://github.com/ali-master/prune-mod/commit/66edc02c8ccf985a7d7c3626c2b4cd7b21db159c))
+
 ### [0.0.2](https://github.com/ali-master/prune-mod/compare/v0.0.1...v0.0.2) (2025-08-09)
 
 
