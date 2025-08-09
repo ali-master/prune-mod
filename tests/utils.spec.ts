@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { formatBytes, formatNumber, formatDuration, output } from "../src/utils";
+import { createTestSuite, ConsolaMockManager, TestAssertions } from "./test-utils";
 
 describe("Utils", () => {
   describe("formatBytes", () => {
@@ -131,15 +132,20 @@ describe("Utils", () => {
   });
 
   describe("output", () => {
+    const testSuite = createTestSuite("Utils", { consolaMock: false });
+    let consolaMock: ConsolaMockManager;
     let consolaSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(async () => {
+      await testSuite.setup("utils-output");
+      consolaMock = new ConsolaMockManager();
       const consola = (await import("consola")).consola;
       consolaSpy = vi.spyOn(consola, "log").mockImplementation(() => {});
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       consolaSpy.mockRestore();
+      await testSuite.teardown();
     });
 
     it("should format output with padded name and value", () => {
@@ -149,9 +155,7 @@ describe("Utils", () => {
       const call = consolaSpy.mock.calls[0][0];
 
       // Check for content with new format (name: value)
-      expect(call).toContain("Test");
-      expect(call).toContain("Value");
-      expect(call).toContain(":");
+      TestAssertions.expectStringToContainPatterns(call, ["Test", "Value", ":"]);
     });
 
     it("should pad name to 20 characters", () => {

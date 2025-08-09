@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { spawn } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
+import { TEST_PATTERNS } from "./test-utils";
 
 describe("CLI Integration Tests", () => {
   const cliPath = path.join(__dirname, "..", "dist", "node", "cli.js");
@@ -443,7 +444,7 @@ describe("CLI Integration Tests", () => {
         });
 
         expect(result.code).toBe(0);
-        expect(result.stdout).toContain("prune-mod");
+        TEST_PATTERNS.verifyCLIOutput(result, ["prune-mod"]);
       } catch {
         // Skip test if bun is not available
         console.log("Skipping Bun runtime test - Bun not available");

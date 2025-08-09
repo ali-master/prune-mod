@@ -10,52 +10,29 @@ import {
   type PrunerOptions,
   type Stats,
 } from "../src/prune";
+import {
+  createTestSuite,
+  TestDataGenerator,
+  TestAssertions,
+  TEST_PATTERNS,
+  COMMON_TEST_FILES,
+  COMMON_TEST_DIRS,
+} from "./test-utils";
 
 describe("Pruner", () => {
-  const fixturesDir = path.join(__dirname, "fixtures", "node_modules");
-  const testDir = path.join(__dirname, "temp-test");
+  const testSuite = createTestSuite("Pruner", {
+    fileManager: true,
+    consolaMock: true,
+  });
+  let testDir: string;
 
   beforeEach(async () => {
-    // Create a copy of fixtures for testing
-    await fs.promises.cp(fixturesDir, testDir, { recursive: true });
-    // Mock consola for each test
-    consola.mockTypes(() => vi.fn());
+    const { fileManager } = await testSuite.setup("pruner-test");
+    testDir = fileManager!.testDirectory;
   });
 
   afterEach(async () => {
-    // Clean up test directory with better error handling
-    try {
-      // First try to change permissions to ensure we can delete
-      const fixPermissions = async (dir: string) => {
-        try {
-          const stats = await fs.promises.stat(dir);
-          if (stats.isDirectory()) {
-            await fs.promises.chmod(dir, 0o755);
-            const items = await fs.promises.readdir(dir);
-            for (const item of items) {
-              await fixPermissions(path.join(dir, item));
-            }
-          } else {
-            await fs.promises.chmod(dir, 0o644);
-          }
-        } catch {
-          // Ignore chmod errors
-        }
-      };
-
-      const exists = await fs.promises.access(testDir).then(
-        () => true,
-        () => false,
-      );
-      if (exists) {
-        await fixPermissions(testDir);
-        await fs.promises.rm(testDir, { recursive: true, force: true });
-      }
-    } catch {
-      // Ignore cleanup errors - the OS will clean up temp files
-    }
-    // Restore consola after each test
-    vi.clearAllMocks();
+    await testSuite.teardown();
   });
 
   describe("constructor", () => {
@@ -104,39 +81,39 @@ describe("Pruner", () => {
 
     it("should not prune files matching exception patterns", () => {
       pruner = new Pruner({ exceptions: ["*.keep", "important.*"] });
-      const dirent = { name: "file.keep", isDirectory: () => false } as fs.Dirent;
+      const dirent = TestDataGenerator.createMockDirent("file.keep", false);
       expect(pruner["shouldPrune"]("file.keep", dirent)).toBe(false);
     });
 
     it("should prune files matching glob patterns", () => {
       pruner = new Pruner({ globs: ["*.temp", "cache-*"] });
-      const dirent = { name: "file.temp", isDirectory: () => false } as fs.Dirent;
+      const dirent = TestDataGenerator.createMockDirent("file.temp", false);
       expect(pruner["shouldPrune"]("file.temp", dirent)).toBe(true);
     });
 
     it("should prune directories in the default list", () => {
-      const dirent = { name: "test", isDirectory: () => true } as fs.Dirent;
-      expect(pruner["shouldPrune"]("test", dirent)).toBe(true);
+      const dirent = TestDataGenerator.createMockDirent(COMMON_TEST_DIRS.TEST, true);
+      expect(pruner["shouldPrune"](COMMON_TEST_DIRS.TEST, dirent)).toBe(true);
     });
 
     it("should prune files in the default list", () => {
-      const dirent = { name: "LICENSE", isDirectory: () => false } as fs.Dirent;
-      expect(pruner["shouldPrune"]("LICENSE", dirent)).toBe(true);
+      const dirent = TestDataGenerator.createMockDirent(COMMON_TEST_FILES.LICENSE, false);
+      expect(pruner["shouldPrune"](COMMON_TEST_FILES.LICENSE, dirent)).toBe(true);
     });
 
     it("should prune files with default extensions", () => {
-      const dirent = { name: "README.md", isDirectory: () => false } as fs.Dirent;
-      expect(pruner["shouldPrune"]("README.md", dirent)).toBe(true);
+      const dirent = TestDataGenerator.createMockDirent(COMMON_TEST_FILES.README, false);
+      expect(pruner["shouldPrune"](COMMON_TEST_FILES.README, dirent)).toBe(true);
     });
 
     it("should not prune files not matching any criteria", () => {
-      const dirent = { name: "index.js", isDirectory: () => false } as fs.Dirent;
-      expect(pruner["shouldPrune"]("index.js", dirent)).toBe(false);
+      const dirent = TestDataGenerator.createMockDirent(COMMON_TEST_FILES.INDEX_JS, false);
+      expect(pruner["shouldPrune"](COMMON_TEST_FILES.INDEX_JS, dirent)).toBe(false);
     });
 
     it("should check exact path match", () => {
       pruner = new Pruner({ files: ["specific/path/file.js"] });
-      const dirent = { name: "file.js", isDirectory: () => false } as fs.Dirent;
+      const dirent = TestDataGenerator.createMockDirent("file.js", false);
       expect(pruner["shouldPrune"]("specific/path/file.js", dirent)).toBe(true);
     });
   });
@@ -172,20 +149,18 @@ describe("Pruner", () => {
 
       // Check that test directories are removed
       const testPackageTestDir = path.join(testDir, "test-package", "test");
-      await expect(fs.promises.access(testPackageTestDir)).rejects.toThrow();
+      await TestAssertions.expectFileNotToExist(testPackageTestDir);
     });
 
     it("should prune documentation files", async () => {
       const pruner = new Pruner({ dir: testDir });
       await pruner.prune();
 
-      // Check that docs directories are removed
-      const docsDir = path.join(testDir, "test-package", "docs");
-      await expect(fs.promises.access(docsDir)).rejects.toThrow();
-
-      // Check that README files are removed
-      const readmePath = path.join(testDir, "test-package", "README.md");
-      await expect(fs.promises.access(readmePath)).rejects.toThrow();
+      // Check that documentation files and directories are removed
+      await TEST_PATTERNS.verifyFilesRemoved(testDir, [
+        "test-package/docs",
+        "test-package/README.md",
+      ]);
     });
 
     it("should prune configuration files", async () => {
@@ -193,24 +168,21 @@ describe("Pruner", () => {
       await pruner.prune();
 
       // Check that config files are removed
-      const eslintPath = path.join(testDir, "test-package", ".eslintrc");
-      await expect(fs.promises.access(eslintPath)).rejects.toThrow();
-
-      const prettierPath = path.join(testDir, "test-package", ".prettierrc");
-      await expect(fs.promises.access(prettierPath)).rejects.toThrow();
+      await TEST_PATTERNS.verifyFilesRemoved(testDir, [
+        "test-package/.eslintrc",
+        "test-package/.prettierrc",
+      ]);
     });
 
     it("should keep main entry files", async () => {
       const pruner = new Pruner({ dir: testDir });
       await pruner.prune();
 
-      // Check that index.js is kept
-      const indexPath = path.join(testDir, "test-package", "index.js");
-      expect(fs.existsSync(indexPath)).toBe(true);
-
-      // Check that package.json is kept
-      const packagePath = path.join(testDir, "test-package", "package.json");
-      expect(fs.existsSync(packagePath)).toBe(true);
+      // Check that essential files are kept
+      await TEST_PATTERNS.verifyFilesKept(testDir, [
+        "test-package/index.js",
+        "test-package/package.json",
+      ]);
     });
 
     it("should respect exception patterns", async () => {
@@ -228,8 +200,7 @@ describe("Pruner", () => {
       expect(fs.existsSync(keepFile)).toBe(true);
 
       // But other README files should be removed
-      const readmePath = path.join(testDir, "test-package", "README.md");
-      await expect(fs.promises.access(readmePath)).rejects.toThrow();
+      await TEST_PATTERNS.verifyFilesRemoved(testDir, ["test-package/README.md"]);
     });
 
     it("should handle verbose mode", async () => {
@@ -308,10 +279,11 @@ describe("Pruner", () => {
   describe("Dry run functionality", () => {
     it("should not remove files in dry run mode", async () => {
       const pruner = new Pruner({ dir: testDir, dryRun: true });
+      const fileManager = testSuite.resources.fileManager!;
 
-      const beforeStats = await getDirectoryStats(testDir);
+      const beforeStats = await fileManager.getDirectoryStats();
       await pruner.prune();
-      const afterStats = await getDirectoryStats(testDir);
+      const afterStats = await fileManager.getDirectoryStats();
 
       // Files should not be removed in dry run mode
       expect(afterStats.fileCount).toBe(beforeStats.fileCount);
@@ -343,42 +315,16 @@ describe("Pruner", () => {
 
     it("should work with dry run disabled (normal mode)", async () => {
       const pruner = new Pruner({ dir: testDir, dryRun: false });
+      const fileManager = testSuite.resources.fileManager!;
 
-      const beforeStats = await getDirectoryStats(testDir);
+      const beforeStats = await fileManager.getDirectoryStats();
       await pruner.prune();
-      const afterStats = await getDirectoryStats(testDir);
+      const afterStats = await fileManager.getDirectoryStats();
 
       // Files should be removed in normal mode
       expect(afterStats.fileCount).toBeLessThan(beforeStats.fileCount);
     });
   });
-
-  async function getDirectoryStats(dir: string): Promise<{ fileCount: number; totalSize: number }> {
-    let fileCount = 0;
-    let totalSize = 0;
-
-    async function walk(currentDir: string) {
-      const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = path.join(currentDir, entry.name);
-        if (entry.isDirectory()) {
-          await walk(fullPath);
-        } else {
-          fileCount++;
-          const stat = await fs.promises.stat(fullPath);
-          totalSize += stat.size;
-        }
-      }
-    }
-
-    try {
-      await walk(dir);
-    } catch {
-      // Ignore errors
-    }
-
-    return { fileCount, totalSize };
-  }
 
   describe("Default exports", () => {
     it("should export default files list", () => {
