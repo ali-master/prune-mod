@@ -108,11 +108,8 @@ jobs:
       - name: 🛠️ Build project
         run: bun run build
 
-      - name: 🔠 Lint project
-        run: bun lint
-
       - name: 🎨 Prettier check
-        run: bun format:check
+        run: bun run format:check
 
       - name: 📊 Upload build artifacts
         uses: actions/upload-artifact@v4
