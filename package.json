@@ -84,12 +84,12 @@
     "format": "prettier --write src tests",
     "format:check": "prettier --check src tests",
     "prepublish:next": "bun run build",
-    "publish:next": "bun publish --access public --tag next",
+    "publish:next": "bun publish --tag next",
     "prepublish:npm": "bun run build",
-    "publish:npm": "bun publish --access public",
+    "publish:npm": "bun publish",
     "prerelease": "bun run test",
     "release": "bun run build",
-    "postrelease": "standard-version",
+    "postrelease": "standard-version && git push --follow-tags origin master && bun publish",
     "release:beta": "bun run build",
     "postrelease:beta": "standard-version --prerelease beta",
     "preinstall": "bunx only-allow bun"
@@ -114,6 +114,9 @@
     "standard-version": "^9.5.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "packageManager": "bun@1.2.19"
 }
