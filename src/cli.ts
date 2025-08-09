@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import { consola } from "consola";
+import { logger } from "./logger";
 import { Pruner } from "./prune";
 import { formatBytes, formatNumber, formatDuration, output } from "./utils";
 
@@ -41,7 +41,7 @@ const { values, positionals } = parseArgs({
 });
 
 function showHelp() {
-  consola.info(`
+  logger.info(`
 prune-mod - Remove unnecessary files from node_modules
 
 Usage:
@@ -90,16 +90,16 @@ async function main() {
     const endTime = process.hrtime.bigint();
     const durationMs = Number(endTime - startTime) / 1_000_000;
 
-    consola.info("");
+    logger.info("");
     output("files total", formatNumber(stats.filesTotal));
     output("files removed", formatNumber(stats.filesRemoved));
     output("size removed", formatBytes(stats.sizeRemoved));
     output("duration", formatDuration(durationMs));
-    consola.info("");
+    logger.info("");
   } catch (error) {
-    consola.error("Error:", error);
+    logger.error("Error:", error);
     process.exit(1);
   }
 }
 
-main().catch((error) => consola.error(error));
+main().catch((error) => logger.error(error));

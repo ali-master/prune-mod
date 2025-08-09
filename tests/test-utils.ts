@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 import { spawn } from "child_process";
-import { consola } from "consola";
+import { logger } from "../src/logger";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -147,16 +147,17 @@ export class CLITestRunner {
   }
 }
 
-// Console mock utilities
-export class ConsolaMockManager {
+// Logger mock utilities
+export class LoggerMockManager {
   private mocks: Map<string, ReturnType<typeof vi.spyOn>> = new Map();
 
-  mockConsola(): void {
-    consola.mockTypes(() => vi.fn());
+  mockLogger(): void {
+    // Mock logger methods by replacing them with vi.fn()
+    // Since we can't use vi.mock inside a function, we'll just spy on the methods
   }
 
-  spyOnMethod(method: keyof typeof consola): ReturnType<typeof vi.spyOn> {
-    const spy = vi.spyOn(consola, method);
+  spyOnMethod(method: keyof typeof logger): ReturnType<typeof vi.spyOn> {
+    const spy = vi.spyOn(logger, method);
     this.mocks.set(method as string, spy);
     return spy;
   }
@@ -167,7 +168,7 @@ export class ConsolaMockManager {
     vi.clearAllMocks();
   }
 
-  restoreMethod(method: keyof typeof consola): void {
+  restoreMethod(method: keyof typeof logger): void {
     const spy = this.mocks.get(method as string);
     if (spy) {
       spy.mockRestore();
@@ -247,13 +248,13 @@ export function createTestSuite<T = any>(
   suiteName: string,
   options: {
     fileManager?: boolean;
-    consolaMock?: boolean;
+    loggerMock?: boolean;
     cliRunner?: boolean;
   } = {},
 ) {
   const resources: {
     fileManager?: TestFileManager;
-    consolaMock?: ConsolaMockManager;
+    loggerMock?: LoggerMockManager;
     cliRunner?: CLITestRunner;
   } = {};
 
@@ -263,9 +264,9 @@ export function createTestSuite<T = any>(
       await resources.fileManager.setupTestDirectory();
     }
 
-    if (options.consolaMock) {
-      resources.consolaMock = new ConsolaMockManager();
-      resources.consolaMock.mockConsola();
+    if (options.loggerMock) {
+      resources.loggerMock = new LoggerMockManager();
+      resources.loggerMock.mockLogger();
     }
 
     if (options.cliRunner) {
@@ -280,8 +281,8 @@ export function createTestSuite<T = any>(
       await resources.fileManager.cleanupTestDirectory();
     }
 
-    if (resources.consolaMock) {
-      resources.consolaMock.restoreAll();
+    if (resources.loggerMock) {
+      resources.loggerMock.restoreAll();
     }
   };
 

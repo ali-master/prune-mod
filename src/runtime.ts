@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { getRuntime } from "./utils";
-import { consola } from "consola";
+import { logger } from "./logger";
 
 const currentFilename = fileURLToPath(import.meta.url);
 const currentDirname = dirname(currentFilename);
@@ -10,7 +10,7 @@ const currentDirname = dirname(currentFilename);
 const { isBun, isBrowser, isDeno, currentRuntime } = getRuntime();
 
 if (isBrowser || isDeno) {
-  consola.error(
+  logger.error(
     `This script cannot be run in a ${currentRuntime} environment. Please use Node.js or Bun.`,
   );
 
@@ -31,7 +31,7 @@ const child = spawn(runtime, [scriptPath, ...process.argv.slice(2)], {
 
 // Debug: Log when spawning
 if (process.env.DEBUG_CLI) {
-  consola.info(`DEBUG: Spawning ${runtime} with args:`, [scriptPath, ...process.argv.slice(2)]);
+  logger.debug(`DEBUG: Spawning ${runtime} with args:`, [scriptPath, ...process.argv.slice(2)]);
 }
 
 // Forward stdout and stderr to parent process
@@ -45,12 +45,12 @@ child.stderr?.on("data", (data) => {
 
 child.on("exit", (code) => {
   if (process.env.DEBUG_CLI) {
-    consola.info(`DEBUG: Child process exited with code:`, code);
+    logger.debug(`DEBUG: Child process exited with code:`, code);
   }
   process.exit(code ?? 0);
 });
 
 child.on("error", (err) => {
-  consola.error(`Failed to start ${runtime}:`, err);
+  logger.error(`Failed to start ${runtime}:`, err);
   process.exit(1);
 });

@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { consola } from "consola";
+import { logger } from "./logger";
 import { minimatch } from "minimatch";
 import { DefaultDirectories, DefaultExtensions, DefaultFiles } from "./constants";
 import type { PrunerOptions, Stats } from "./types";
@@ -63,7 +63,7 @@ export class Pruner {
       }
     } catch (err) {
       if (this.verbose) {
-        consola.error(`Error walking directory ${dir}:`, err);
+        logger.error(`Error walking directory ${dir}:`, err);
       }
     }
   }
@@ -82,7 +82,7 @@ export class Pruner {
         if (shouldPruneResult) {
           if (this.verbose) {
             const prefix = this.dryRun ? "[DRY RUN] " : "";
-            consola.info(`${prefix}Prune directory: ${fullPath}`);
+            logger.info(`${prefix}Prune directory: ${fullPath}`);
           }
           // Get directory stats efficiently
           const dirStats = await this.getDirStats(fullPath);
@@ -133,7 +133,7 @@ export class Pruner {
 
         if (this.verbose) {
           const prefix = this.dryRun ? "[DRY RUN] " : "";
-          consola.info(`${prefix}Prune file: ${fullPath}`);
+          logger.info(`${prefix}Prune file: ${fullPath}`);
         }
       } catch (err) {
         // File might have been deleted or moved, ignore stat errors
@@ -316,7 +316,7 @@ export class Pruner {
   private async processRemoveQueue(_stats: Stats): Promise<void> {
     if (this.dryRun) {
       if (this.verbose) {
-        consola.info(`[DRY RUN] Would remove ${this.removeQueue.length} items`);
+        logger.info(`[DRY RUN] Would remove ${this.removeQueue.length} items`);
       }
       return;
     }
@@ -346,7 +346,7 @@ export class Pruner {
             }
           } catch (err) {
             if (this.verbose) {
-              consola.error(`Error removing ${itemPath}:`, err);
+              logger.error(`Error removing ${itemPath}:`, err);
             }
           }
         }),

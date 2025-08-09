@@ -95,7 +95,7 @@
     "preinstall": "bunx only-allow bun"
   },
   "dependencies": {
-    "consola": "^3.4.2",
+    "chalk": "^5.5.0",
     "minimatch": "^10.0.3"
   },
   "devDependencies": {

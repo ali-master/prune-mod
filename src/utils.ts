@@ -1,4 +1,4 @@
-import { consola } from "consola";
+import { logger } from "./logger";
 
 // Pre-computed constants for better performance
 const UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
@@ -27,17 +27,22 @@ const MS_IN_MINUTE = MS_IN_SECOND * SEC_IN_MINUTE;
 
 export function formatDuration(ms: number): string {
   if (ms < MS_IN_SECOND) {
-    return `${ms}ms`;
+    // Round to 2 decimal places maximum, no trailing zeros for ms
+    const rounded = Math.round(ms * 100) / 100;
+    return `${rounded}ms`;
   }
   if (ms < MS_IN_MINUTE) {
-    return `${(ms / MS_IN_SECOND).toFixed(1)}s`;
+    // Round to 1 decimal place, always show decimal
+    const seconds = ms / MS_IN_SECOND;
+    return `${seconds.toFixed(1)}s`;
   }
-  return `${(ms / MS_IN_MINUTE).toFixed(1)}m`;
+  // Round to 1 decimal place, always show decimal
+  const minutes = ms / MS_IN_MINUTE;
+  return `${minutes.toFixed(1)}m`;
 }
 
 export function output(name: string, value: string): void {
-  // Use consola.info for formatted output
-  consola.info(`${name.padStart(20)}: ${value}`);
+  logger.info(`${name.padStart(20)}: ${value}`);
 }
 
 /**

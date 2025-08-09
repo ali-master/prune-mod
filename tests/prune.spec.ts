@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { consola } from "consola";
+import { logger } from "../src/logger";
 import * as fs from "fs";
 import * as path from "path";
 import { Pruner } from "../src/prune";
@@ -17,7 +17,7 @@ import {
 describe("Pruner", () => {
   const testSuite = createTestSuite("Pruner", {
     fileManager: true,
-    consolaMock: true,
+    loggerMock: true,
   });
   let testDir: string;
 
@@ -199,26 +199,26 @@ describe("Pruner", () => {
     });
 
     it("should handle verbose mode", async () => {
-      const consolaInfoSpy = vi.spyOn(consola, "info");
+      const loggerInfoSpy = vi.spyOn(logger, "info");
       const pruner = new Pruner({ dir: testDir, verbose: true });
       await pruner.prune();
 
-      expect(consolaInfoSpy).toHaveBeenCalled();
-      expect(consolaInfoSpy.mock.calls.some((call) => call[0].includes("Prune"))).toBe(true);
+      expect(loggerInfoSpy).toHaveBeenCalled();
+      expect(loggerInfoSpy.mock.calls.some((call) => call[0].includes("Prune"))).toBe(true);
 
-      consolaInfoSpy.mockRestore();
+      loggerInfoSpy.mockRestore();
     });
 
     it("should handle errors during pruning", async () => {
-      const consolaErrorSpy = vi.spyOn(consola, "error");
+      const loggerErrorSpy = vi.spyOn(logger, "error");
       const pruner = new Pruner({ dir: "/non/existent/path", verbose: true });
       const stats = await pruner.prune();
 
       expect(stats.filesTotal).toBe(0);
       expect(stats.filesRemoved).toBe(0);
-      expect(consolaErrorSpy).toHaveBeenCalled();
+      expect(loggerErrorSpy).toHaveBeenCalled();
 
-      consolaErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
 
     it("should process remove queue with concurrency limit", async () => {
@@ -245,7 +245,7 @@ describe("Pruner", () => {
     });
 
     it("should handle removal errors gracefully", async () => {
-      const consolaErrorSpy = vi.spyOn(consola, "error");
+      const loggerErrorSpy = vi.spyOn(logger, "error");
       const pruner = new Pruner({ dir: testDir, verbose: true });
 
       // Add a non-existent file to remove queue
@@ -262,12 +262,12 @@ describe("Pruner", () => {
 
       await pruner["processRemoveQueue"](stats);
 
-      expect(consolaErrorSpy).toHaveBeenCalledWith(
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("Error removing"),
         expect.anything(),
       );
 
-      consolaErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
   });
 
@@ -286,17 +286,17 @@ describe("Pruner", () => {
     });
 
     it("should log dry run actions when verbose", async () => {
-      const consolaInfoSpy = vi.spyOn(consola, "info");
+      const loggerInfoSpy = vi.spyOn(logger, "info");
       const pruner = new Pruner({ dir: testDir, dryRun: true, verbose: true });
 
       await pruner.prune();
 
-      const dryRunLogs = consolaInfoSpy.mock.calls.filter((call) =>
+      const dryRunLogs = loggerInfoSpy.mock.calls.filter((call) =>
         call[0]?.includes?.("[DRY RUN]"),
       );
 
       expect(dryRunLogs.length).toBeGreaterThan(0);
-      consolaInfoSpy.mockRestore();
+      loggerInfoSpy.mockRestore();
     });
 
     it("should still calculate correct stats in dry run mode", async () => {
@@ -360,7 +360,7 @@ describe("Pruner", () => {
     });
 
     it("should handle directory read errors", async () => {
-      const consolaErrorSpy = vi.spyOn(consola, "error");
+      const loggerErrorSpy = vi.spyOn(logger, "error");
       const pruner = new Pruner({ dir: testDir, verbose: true });
       const stats: Stats = {
         filesTotal: 0,
@@ -370,10 +370,10 @@ describe("Pruner", () => {
 
       await pruner["walkDirectory"]("/non/existent/path", stats);
 
-      expect(consolaErrorSpy).toHaveBeenCalled();
+      expect(loggerErrorSpy).toHaveBeenCalled();
       expect(stats.filesTotal).toBe(0);
 
-      consolaErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
 
     it("should recursively process subdirectories", async () => {

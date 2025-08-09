@@ -54,7 +54,7 @@ describe.skip("CLI Integration Tests", () => {
 
       child.on("close", (code) => {
         clearTimeout(timeout);
-        // Combine stdout and stderr for tests since consola outputs to stderr
+        // Combine stdout and stderr for tests since logger outputs to stderr
         const output = stdout + stderr;
         resolve({ stdout: output, stderr, code });
       });
