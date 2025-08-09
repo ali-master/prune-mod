@@ -106,7 +106,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🛠️ Build project
-        run: bun build
+        run: bun run build
 
       - name: 🔠 Lint project
         run: bun lint
@@ -156,7 +156,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🛠️ Build project
-        run: bun build
+        run: bun run build
 
       - name: 💪 Type checking
         run: bun test:types
@@ -200,7 +200,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🛠️ Build project
-        run: bun build
+        run: bun run build
 
       - name: 🧪 Test CLI functionality
         run: |
@@ -237,7 +237,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🛠️ Build project
-        run: bun build
+        run: bun run build
 
       - name: 📊 Run benchmarks
         run: |
@@ -278,7 +278,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🛠️ Build project
-        run: bun build
+        run: bun run build
 
       - name: 📦 Publish to NPM
         run: bun publish --provenance --access public
