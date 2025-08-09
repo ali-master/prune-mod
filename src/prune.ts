@@ -1,10 +1,23 @@
 import * as fs from "fs";
-import * as path from "path";
 import { logger } from "./logger";
 import { minimatch } from "minimatch";
 import { DefaultDirectories, DefaultExtensions, DefaultFiles } from "./constants";
 import type { PrunerOptions, Stats } from "./types";
 import { WorkspaceDetector, type WorkspaceInfo, WorkspaceType } from "./workspace";
+import {
+  readdir,
+  stat,
+  fileExists,
+  readFile,
+  readJsonFile,
+  removeFile,
+  removeDir,
+  joinPath,
+  resolvePath,
+  dirname,
+  extname,
+  getDirectorySize,
+} from "./fs";
 
 export class Pruner {
   private readonly dir: string;
@@ -94,13 +107,12 @@ export class Pruner {
     // Prune root node_modules if requested
     if (this.includeRoot && this.workspaceInfo.hoistedNodeModules) {
       const rootNodeModules = this.workspaceInfo.hoistedNodeModules;
-      try {
-        await fs.promises.access(rootNodeModules);
+      if (await fileExists(rootNodeModules)) {
         if (this.verbose) {
           logger.info(`Pruning root node_modules at ${rootNodeModules}`);
         }
         await this.walkDirectory(rootNodeModules, stats);
-      } catch {
+      } else {
         if (this.verbose) {
           logger.info(`Root node_modules not found at ${rootNodeModules}`);
         }
@@ -109,14 +121,13 @@ export class Pruner {
 
     // Prune each package's node_modules
     for (const packagePath of this.workspaceInfo.packages) {
-      const packageNodeModules = path.join(packagePath, "node_modules");
-      try {
-        await fs.promises.access(packageNodeModules);
+      const packageNodeModules = joinPath(packagePath, "node_modules");
+      if (await fileExists(packageNodeModules)) {
         if (this.verbose) {
           logger.info(`Pruning package node_modules at ${packageNodeModules}`);
         }
         await this.walkDirectory(packageNodeModules, stats);
-      } catch {
+      } else {
         // Package doesn't have node_modules, skip
         if (this.verbose) {
           logger.info(`No node_modules found in package at ${packagePath}`);
@@ -127,7 +138,7 @@ export class Pruner {
 
   private async walkDirectory(dir: string, stats: Stats): Promise<void> {
     try {
-      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+      const entries = (await readdir(dir, { withFileTypes: true })) as fs.Dirent[];
 
       // Process entries in batches for better memory management
       const batchSize = 50;
@@ -148,7 +159,7 @@ export class Pruner {
 
     // First pass: categorize entries
     for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
+      const fullPath = joinPath(dir, entry.name);
       stats.filesTotal++;
 
       if (entry.isDirectory()) {
@@ -200,10 +211,10 @@ export class Pruner {
     // Process files in smaller concurrent batches to avoid overwhelming the system
     const promises = files.map(async ({ path: fullPath }) => {
       try {
-        const stat = await fs.promises.stat(fullPath);
+        const fileStat = await stat(fullPath);
         stats.filesRemoved++;
-        stats.sizeRemoved += stat.size;
-        this.removeQueue.push({ path: fullPath, isDir: false, size: stat.size });
+        stats.sizeRemoved += fileStat.size;
+        this.removeQueue.push({ path: fullPath, isDir: false, size: fileStat.size });
 
         if (this.verbose) {
           const prefix = this.dryRun ? "[DRY RUN] " : "";
@@ -240,7 +251,7 @@ export class Pruner {
 
     // The sync version returned false, but we need to check if this file might be
     // prunable after checking if it's a package.json main entry file
-    const packageDir = path.dirname(filePath);
+    const packageDir = dirname(filePath);
     const isMainFile = await this.isMainEntryFile(filePath, packageDir);
     if (isMainFile) {
       return false; // Don't prune main entry files
@@ -288,13 +299,13 @@ export class Pruner {
       return true;
     }
 
-    // Check extensions (path.extname is expensive, do last)
-    const ext = path.extname(name);
+    // Check extensions (extname is expensive, do last)
+    const ext = extname(name);
     return this.exts.has(ext);
   }
 
   private async isMainEntryFile(filePath: string, packageDir: string): Promise<boolean> {
-    const packageJsonPath = path.join(packageDir, "package.json");
+    const packageJsonPath = joinPath(packageDir, "package.json");
 
     // Check cache first
     if (this.packageJsonCache.has(packageJsonPath)) {
@@ -302,20 +313,18 @@ export class Pruner {
       if (!cached || !cached.main) {
         return false;
       }
-      return path.resolve(packageDir, cached.main) === path.resolve(filePath);
+      return resolvePath(packageDir, cached.main) === resolvePath(filePath);
     }
 
     try {
-      // Use async file operations
-      await fs.promises.access(packageJsonPath);
-      const content = await fs.promises.readFile(packageJsonPath, "utf-8");
-      const packageJson = JSON.parse(content);
+      // Use fs utilities
+      const packageJson = await readJsonFile(packageJsonPath);
 
       // Cache the result (including null/undefined for non-existent)
       this.packageJsonCache.set(packageJsonPath, packageJson);
 
       const mainFile = packageJson.main;
-      if (mainFile && path.resolve(packageDir, mainFile) === path.resolve(filePath)) {
+      if (mainFile && resolvePath(packageDir, mainFile) === resolvePath(filePath)) {
         return true;
       }
     } catch {
@@ -331,6 +340,8 @@ export class Pruner {
       filesTotal: 0,
       filesRemoved: 0,
       sizeRemoved: 0,
+      sizeBefore: 0,
+      sizeAfter: 0,
     };
 
     const walkQueue: string[] = [dir];
@@ -343,14 +354,14 @@ export class Pruner {
       await Promise.all(
         currentBatch.map(async (currentDir) => {
           try {
-            const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
+            const entries = (await readdir(currentDir, { withFileTypes: true })) as fs.Dirent[];
 
             const filesToStat: string[] = [];
             const dirsToQueue: string[] = [];
 
             // Separate files and directories
             for (const entry of entries) {
-              const fullPath = path.join(currentDir, entry.name);
+              const fullPath = joinPath(currentDir, entry.name);
               stats.filesTotal++;
               stats.filesRemoved++;
 
@@ -368,8 +379,8 @@ export class Pruner {
             if (filesToStat.length > 0) {
               const statPromises = filesToStat.map(async (filePath) => {
                 try {
-                  const stat = await fs.promises.stat(filePath);
-                  stats.sizeRemoved += stat.size;
+                  const fileStat = await stat(filePath);
+                  stats.sizeRemoved += fileStat.size;
                 } catch {
                   // Ignore stat errors
                 }
@@ -414,9 +425,9 @@ export class Pruner {
         chunk.map(async ({ path: itemPath, isDir }) => {
           try {
             if (isDir) {
-              await fs.promises.rm(itemPath, { recursive: true, force: true });
+              await removeDir(itemPath);
             } else {
-              await fs.promises.unlink(itemPath);
+              await removeFile(itemPath);
             }
           } catch (err) {
             if (this.verbose) {
@@ -445,22 +456,16 @@ export class Pruner {
       if (info.type !== WorkspaceType.None) {
         // Add root node_modules if it exists and includeRoot is true
         if (this.includeRoot && info.hoistedNodeModules) {
-          try {
-            await fs.promises.access(info.hoistedNodeModules);
+          if (await fileExists(info.hoistedNodeModules)) {
             directories.push(info.hoistedNodeModules);
-          } catch {
-            // Directory doesn't exist
           }
         }
 
         // Add package node_modules
         for (const packagePath of info.packages) {
-          const nodeModules = path.join(packagePath, "node_modules");
-          try {
-            await fs.promises.access(nodeModules);
+          const nodeModules = joinPath(packagePath, "node_modules");
+          if (await fileExists(nodeModules)) {
             directories.push(nodeModules);
-          } catch {
-            // Directory doesn't exist
           }
         }
       } else {
@@ -472,39 +477,9 @@ export class Pruner {
 
     // Calculate total size for all directories
     for (const dir of directories) {
-      totalSize += await this.getDirectorySize(dir);
+      totalSize += await getDirectorySize(dir);
     }
 
     return totalSize;
-  }
-
-  private async getDirectorySize(dir: string): Promise<number> {
-    let size = 0;
-
-    try {
-      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-
-      const promises = entries.map(async (entry) => {
-        const fullPath = path.join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-          return this.getDirectorySize(fullPath);
-        } else {
-          try {
-            const stat = await fs.promises.stat(fullPath);
-            return stat.size;
-          } catch {
-            return 0;
-          }
-        }
-      });
-
-      const sizes = await Promise.all(promises);
-      size = sizes.reduce((acc, s) => acc + s, 0);
-    } catch {
-      // Error reading directory
-    }
-
-    return size;
   }
 }

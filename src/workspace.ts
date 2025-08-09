@@ -1,6 +1,16 @@
 import * as fs from "fs";
-import * as path from "path";
 import { logger } from "./logger";
+import {
+  fileExists,
+  readFile,
+  readJsonFile,
+  joinPath,
+  resolvePath,
+  dirname,
+  basename,
+  readdir,
+  parsePath,
+} from "./fs";
 
 export enum WorkspaceType {
   None = "none",
@@ -56,14 +66,14 @@ export class WorkspaceDetector {
       type: workspaceType,
       root: rootDir,
       packages,
-      hoistedNodeModules: path.join(rootDir, "node_modules"),
-      packageNodeModules: packages.map((pkg) => path.join(pkg, "node_modules")),
+      hoistedNodeModules: joinPath(rootDir, "node_modules"),
+      packageNodeModules: packages.map((pkg) => joinPath(pkg, "node_modules")),
     };
   }
 
   private async findWorkspaceRoot(directory: string): Promise<string | null> {
-    let currentDir = path.resolve(directory);
-    const root = path.parse(currentDir).root;
+    let currentDir = resolvePath(directory);
+    const root = parsePath(currentDir).root;
 
     while (currentDir !== root) {
       const hasWorkspaceConfig = await this.hasWorkspaceConfiguration(currentDir);
@@ -71,7 +81,7 @@ export class WorkspaceDetector {
         return currentDir;
       }
 
-      const parentDir = path.dirname(currentDir);
+      const parentDir = dirname(currentDir);
       if (parentDir === currentDir) break;
       currentDir = parentDir;
     }
@@ -90,19 +100,13 @@ export class WorkspaceDetector {
     ];
 
     for (const file of configFiles) {
-      try {
-        await fs.promises.access(path.join(dir, file));
+      if (await fileExists(joinPath(dir, file))) {
         return true;
-      } catch {
-        // File doesn't exist, continue checking
       }
     }
 
     try {
-      const packageJsonPath = path.join(dir, "package.json");
-      const content = await fs.promises.readFile(packageJsonPath, "utf-8");
-      const packageJson = JSON.parse(content);
-
+      const packageJson = await readJsonFile(joinPath(dir, "package.json"));
       if (packageJson.workspaces || packageJson.bolt?.workspaces) {
         return true;
       }
@@ -125,26 +129,20 @@ export class WorkspaceDetector {
     ];
 
     for (const [file, type] of checks) {
-      try {
-        await fs.promises.access(path.join(rootDir, file));
+      if (await fileExists(joinPath(rootDir, file))) {
         return type;
-      } catch {
-        // File doesn't exist, continue
       }
     }
 
     // Check package.json for workspaces
     try {
-      const packageJsonPath = path.join(rootDir, "package.json");
-      const content = await fs.promises.readFile(packageJsonPath, "utf-8");
-      const packageJson = JSON.parse(content);
+      const packageJson = await readJsonFile(joinPath(rootDir, "package.json"));
 
       if (packageJson.workspaces) {
         // Check for yarn.lock to distinguish between npm and yarn
-        try {
-          await fs.promises.access(path.join(rootDir, "yarn.lock"));
+        if (await fileExists(joinPath(rootDir, "yarn.lock"))) {
           return WorkspaceType.Yarn;
-        } catch {
+        } else {
           return WorkspaceType.Npm;
         }
       }
@@ -177,9 +175,7 @@ export class WorkspaceDetector {
 
   private async getNpmYarnWorkspaces(rootDir: string): Promise<string[]> {
     try {
-      const packageJsonPath = path.join(rootDir, "package.json");
-      const content = await fs.promises.readFile(packageJsonPath, "utf-8");
-      const packageJson: WorkspaceConfig = JSON.parse(content);
+      const packageJson: WorkspaceConfig = await readJsonFile(joinPath(rootDir, "package.json"));
 
       let patterns: string[] = [];
       if (Array.isArray(packageJson.workspaces)) {
@@ -200,22 +196,24 @@ export class WorkspaceDetector {
       const yamlFiles = ["pnpm-workspace.yaml", "pnpm-workspace.yml"];
 
       for (const file of yamlFiles) {
-        const workspacePath = path.join(rootDir, file);
-        try {
-          const content = await fs.promises.readFile(workspacePath, "utf-8");
-          // Simple YAML parsing for packages array
-          const packagesMatch = content.match(/packages:\s*\n((?:\s+-\s+.+\n?)+)/);
-          if (packagesMatch) {
-            const patterns = packagesMatch[1]
-              .split("\n")
-              .map((line) => line.trim())
-              .filter((line) => line.startsWith("-"))
-              .map((line) => line.replace(/^-\s*['"]?(.+?)['"]?$/, "$1"));
+        const workspacePath = joinPath(rootDir, file);
+        if (await fileExists(workspacePath)) {
+          try {
+            const content = await readFile(workspacePath);
+            // Simple YAML parsing for packages array
+            const packagesMatch = content.match(/packages:\s*\n((?:\s+-\s+.+\n?)+)/);
+            if (packagesMatch) {
+              const patterns = packagesMatch[1]
+                .split("\n")
+                .map((line) => line.trim())
+                .filter((line) => line.startsWith("-"))
+                .map((line) => line.replace(/^-\s*['"]?(.+?)['"]?$/, "$1"));
 
-            return this.resolveWorkspacePatterns(rootDir, patterns);
+              return this.resolveWorkspacePatterns(rootDir, patterns);
+            }
+          } catch {
+            // Error reading file, try next
           }
-        } catch {
-          // File doesn't exist, try next
         }
       }
     } catch (error) {
@@ -226,10 +224,7 @@ export class WorkspaceDetector {
 
   private async getLernaWorkspaces(rootDir: string): Promise<string[]> {
     try {
-      const lernaPath = path.join(rootDir, "lerna.json");
-      const content = await fs.promises.readFile(lernaPath, "utf-8");
-      const lernaConfig = JSON.parse(content);
-
+      const lernaConfig = await readJsonFile(joinPath(rootDir, "lerna.json"));
       const patterns = lernaConfig.packages || ["packages/*"];
       return this.resolveWorkspacePatterns(rootDir, patterns);
     } catch (error) {
@@ -240,30 +235,28 @@ export class WorkspaceDetector {
 
   private async getNxWorkspaces(rootDir: string): Promise<string[]> {
     try {
-      const workspaceJsonPath = path.join(rootDir, "workspace.json");
-      const nxJsonPath = path.join(rootDir, "nx.json");
+      const workspaceJsonPath = joinPath(rootDir, "workspace.json");
+      const nxJsonPath = joinPath(rootDir, "nx.json");
 
       // Try workspace.json first
-      try {
-        const content = await fs.promises.readFile(workspaceJsonPath, "utf-8");
-        const workspaceConfig = JSON.parse(content);
-        if (workspaceConfig.projects) {
-          return Object.values(workspaceConfig.projects).map((project: any) =>
-            path.join(rootDir, typeof project === "string" ? project : project.root),
-          );
+      if (await fileExists(workspaceJsonPath)) {
+        try {
+          const workspaceConfig = await readJsonFile(workspaceJsonPath);
+          if (workspaceConfig.projects) {
+            return Object.values(workspaceConfig.projects).map((project: any) =>
+              joinPath(rootDir, typeof project === "string" ? project : project.root),
+            );
+          }
+        } catch {
+          // Error reading workspace.json
         }
-      } catch {
-        // workspace.json doesn't exist, check for nx.json with inferred projects
       }
 
       // Check nx.json for project patterns
-      try {
-        await fs.promises.access(nxJsonPath);
+      if (await fileExists(nxJsonPath)) {
         // In newer Nx, projects are inferred from file structure
         const patterns = ["apps/*", "libs/*", "packages/*"];
         return this.resolveWorkspacePatterns(rootDir, patterns);
-      } catch {
-        // No nx.json either
       }
     } catch (error) {
       logger.error("Error reading nx workspaces:", error);
@@ -273,12 +266,10 @@ export class WorkspaceDetector {
 
   private async getRushWorkspaces(rootDir: string): Promise<string[]> {
     try {
-      const rushPath = path.join(rootDir, "rush.json");
-      const content = await fs.promises.readFile(rushPath, "utf-8");
-      const rushConfig = JSON.parse(content);
+      const rushConfig = await readJsonFile(joinPath(rootDir, "rush.json"));
 
       if (rushConfig.projects) {
-        return rushConfig.projects.map((project: any) => path.join(rootDir, project.projectFolder));
+        return rushConfig.projects.map((project: any) => joinPath(rootDir, project.projectFolder));
       }
     } catch (error) {
       logger.error("Error reading rush workspaces:", error);
@@ -290,9 +281,7 @@ export class WorkspaceDetector {
     try {
       // Turbo doesn't define packages itself, it relies on the underlying package manager
       // Check package.json for workspaces configuration
-      const packageJsonPath = path.join(rootDir, "package.json");
-      const content = await fs.promises.readFile(packageJsonPath, "utf-8");
-      const packageJson = JSON.parse(content);
+      const packageJson = await readJsonFile(joinPath(rootDir, "package.json"));
 
       // Turbo works with npm/yarn/pnpm workspaces
       if (packageJson.workspaces) {
@@ -327,19 +316,16 @@ export class WorkspaceDetector {
       // Handle glob patterns
       if (pattern.includes("*")) {
         const baseDir = pattern.substring(0, pattern.indexOf("*"));
-        const resolvedBase = path.join(rootDir, baseDir);
+        const resolvedBase = joinPath(rootDir, baseDir);
 
         try {
-          const entries = await fs.promises.readdir(resolvedBase, { withFileTypes: true });
+          const entries = (await readdir(resolvedBase, { withFileTypes: true })) as fs.Dirent[];
           for (const entry of entries) {
             if (entry.isDirectory()) {
-              const packagePath = path.join(resolvedBase, entry.name);
+              const packagePath = joinPath(resolvedBase, entry.name);
               // Check if it has a package.json
-              try {
-                await fs.promises.access(path.join(packagePath, "package.json"));
+              if (await fileExists(joinPath(packagePath, "package.json"))) {
                 packages.push(packagePath);
-              } catch {
-                // Not a package, skip
               }
             }
           }
@@ -348,12 +334,9 @@ export class WorkspaceDetector {
         }
       } else {
         // Direct path
-        const packagePath = path.join(rootDir, pattern);
-        try {
-          await fs.promises.access(path.join(packagePath, "package.json"));
+        const packagePath = joinPath(rootDir, pattern);
+        if (await fileExists(joinPath(packagePath, "package.json"))) {
           packages.push(packagePath);
-        } catch {
-          // Not a valid package
         }
       }
     }

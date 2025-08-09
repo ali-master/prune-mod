@@ -1,8 +1,8 @@
 import { spawn } from "child_process";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { getRuntime } from "./utils";
 import { logger } from "./logger";
+import { dirname, joinPath } from "./fs";
 
 const currentFilename = fileURLToPath(import.meta.url);
 const currentDirname = dirname(currentFilename);
@@ -18,8 +18,8 @@ if (isBrowser || isDeno) {
 }
 
 const scriptPath = isBun
-  ? join(currentDirname, "bun", "cli.js")
-  : join(currentDirname, "node", "cli.js");
+  ? joinPath(currentDirname, "bun", "cli.js")
+  : joinPath(currentDirname, "node", "cli.js");
 
 const runtime = isBun ? "bun" : "node";
 
