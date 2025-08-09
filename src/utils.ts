@@ -55,7 +55,7 @@ export function getRuntime() {
   const isDeno: boolean = !!globalThis.Deno;
   const isNode: boolean = !!globalThis.process?.versions?.node && !isBun;
   // @ts-expect-error
-  const isBrowser: boolean = globalThis.window && !isDeno;
+  const isBrowser: boolean = !!(globalThis.window && !isDeno);
   let currentRuntime: "bun" | "deno" | "node" | "browser" | "unknown";
   switch (true) {
     case isBun:

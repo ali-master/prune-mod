@@ -6,7 +6,7 @@
 
 A fast and efficient tool to reduce node_modules size by removing unnecessary files. Save up to 60% disk space by cleaning out docs, tests, and development files while keeping your code working perfectly.
 
-**Ultra-lightweight at just 7.87 KB** (3.09 KB gzipped) - smaller than most images, yet powerful enough to save hundreds of megabytes!
+**Ultra-lightweight at just 8.3 KB** (3.2 KB gzipped) - smaller than most images, yet powerful enough to save hundreds of megabytes!
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/@usex%2Fprune-mod.svg)](https://badge.fury.io/js/@usex%2Fprune-mod)
