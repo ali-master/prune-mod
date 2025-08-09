@@ -1,6 +1,6 @@
 {
   "name": "@usex/prune-mod",
-  "description": "✂️ Reduce node_modules size by up to 60% by removing unnecessary files like docs, tests, and source maps. Optimized for serverless deployments with Up.",
+  "description": "Fast and efficient tool to reduce node_modules size by up to 60%. Safely removes unnecessary files like docs, tests, and dev configs while keeping your app working perfectly. Ideal for serverless, Docker, and deployment optimization.",
   "version": "0.0.0",
   "type": "module",
   "files": [
@@ -25,11 +25,23 @@
   },
   "keywords": [
     "node_modules",
-    "prune-mod",
-    "cli",
-    "npm",
+    "prune",
+    "cleanup",
+    "optimize",
+    "reduce",
+    "shrink",
+    "size",
+    "deployment",
+    "serverless",
+    "docker",
     "nodejs",
-    "bun"
+    "bun",
+    "devops",
+    "performance",
+    "clean",
+    "space-saver",
+    "bundle-size",
+    "disk-space"
   ],
   "author": {
     "name": "Ali Torki",

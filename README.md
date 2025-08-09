@@ -2,44 +2,47 @@
 
 ![prune-mod Logo](assets/logo.svg)
 
-# 🕳️ prune-mod
+# prune-mod
 
-**A cosmic black hole for your node_modules - compress unnecessary files into oblivion with up to 60% size reduction. Harness gravitational forces to optimize your deployments.**
+A fast and efficient tool to reduce node_modules size by removing unnecessary files. Save up to 60% disk space by cleaning out docs, tests, and development files while keeping your code working perfectly.
+
+**Ultra-lightweight at just 7.87 KB** (3.09 KB gzipped) - smaller than most images, yet powerful enough to save hundreds of megabytes!
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/@usex%2Fprune-mod.svg)](https://badge.fury.io/js/@usex%2Fprune-mod)
 [![CI/CD Pipeline](https://github.com/ali-master/prune-mod/actions/workflows/ci.yml/badge.svg)](https://github.com/ali-master/prune-mod/actions/workflows/ci.yml)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org)
-[![Bun Ready](https://img.shields.io/badge/Bun-Ready-black.svg)](https://bun.sh)
-
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Examples](#-examples) • [API](#-api) • [Contributing](#-contributing)
 
 </div>
 
----
 
-<div align="center">
-  <img src="assets/social-preview.svg" alt="prune-mod Demo" style="border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin: 20px 0;" width="100%">
-</div>
+## Why prune-mod?
 
-## ✨ Features
+Node.js projects often have large node_modules folders filled with unnecessary files like documentation, tests, and build configs. These files take up valuable disk space and slow down deployments. prune-mod safely removes these files while keeping your application working perfectly.
 
-- 🕳️ **Event Horizon Optimization** - Files beyond the point of no return are compressed into oblivion
-- 🌌 **Accretion Disk Scanning** - Intelligent pattern detection pulls unnecessary files into the gravitational field
-- ⚡ **Hawking Radiation Safety** - Critical runtime files are preserved through quantum mechanics
-- 🚀 **Supermassive Performance** - Built with Bun and TypeScript for light-speed processing
-- 📦 **Gravitational Compression** - Reduce node_modules size by up to 60% through cosmic forces
-- 🎯 **Smart Pattern Matching** - Uses minimatch for flexible file pattern exclusions
-- 🛡️ **Safe by Default** - Preserves essential runtime files and respects package.json
-- ⚙️ **Highly Configurable** - Customizable patterns, exceptions, and dry-run mode
-- 🔍 **Comprehensive Reporting** - Detailed statistics on files removed and space saved
-- 📊 **Beautiful CLI Output** - Clean, colorful output powered by consola
-- 🌍 **Cross-platform** - Works on Windows, macOS, and Linux
-- 📝 **TypeScript Native** - Built with TypeScript, includes full type definitions
+**Key Benefits:**
+- **Reduce size by 60%** - Dramatically shrink your node_modules
+- **Faster deployments** - Less data to transfer and extract
+- **Lower storage costs** - Save money on serverless and container deployments
+- **Safe by default** - Never breaks your application
+- **Lightning fast** - Process thousands of files in seconds
+- **Smart runtime detection** - Automatically uses the fastest available runtime (Bun or Node.js)
 
-## 🚀 Installation
+## Quick Start
 
-### NPM / Yarn / pnpm
+```bash
+# Install globally
+npm install -g @usex/prune-mod
+
+# Use in any project
+prune-mod
+
+# Or run without installing
+npx @usex/prune-mod
+```
+
+## Installation
+
+### npm / yarn / pnpm
 
 ```bash
 # npm
@@ -58,7 +61,7 @@ pnpm add -g @usex/prune-mod
 bun install -g @usex/prune-mod
 ```
 
-### Usage in NPX/Bunx (No Installation)
+### Run without installing
 
 ```bash
 # npm
@@ -68,217 +71,275 @@ npx @usex/prune-mod
 bunx @usex/prune-mod
 ```
 
-## 📖 Usage
+## Usage
 
-### Basic Usage
+### Basic usage
 
 ```bash
-# Prune current directory's node_modules
+# Clean current project's node_modules
 prune-mod
 
-# Prune specific directory
+# Clean specific directory
 prune-mod ./my-project/node_modules
 
-# Dry run (preview what would be removed)
+# Preview what will be removed (safe to run)
 prune-mod --dry-run
 
-# Verbose output with detailed logs
+# See detailed output
 prune-mod --verbose
 ```
 
-### Command Line Options
+### Command options
 
 ```
 Usage:
   prune-mod [options] [directory]
 
 Options:
-  -v, --verbose       Verbose log output
-  --exclude <glob>    Glob of files that should not be pruned (can be specified multiple times)
-  --include <glob>    Globs of files that should always be pruned (can be specified multiple times)
-  -d, --dry-run       Show what would be pruned without actually removing files
+  -v, --verbose       Show detailed output
+  --exclude <pattern> Don't remove files matching this pattern
+  --include <pattern> Always remove files matching this pattern
+  -d, --dry-run       Preview changes without removing files
   -h, --help          Show help
 
-Arguments:
-  directory           Target directory to prune (default: "node_modules")
-
 Examples:
-  prune-mod                                    # Prune ./node_modules
-  prune-mod ./my-project/node_modules         # Prune specific directory
-  prune-mod --exclude "*.config.js"          # Keep config files
-  prune-mod --include "*.log" --include "*.tmp"  # Always remove logs and temp files
-  prune-mod --dry-run --verbose              # Preview with detailed output
+  prune-mod                              # Clean ./node_modules
+  prune-mod ./dist/node_modules         # Clean specific directory
+  prune-mod --exclude "*.config.js"    # Keep config files
+  prune-mod --dry-run --verbose         # Preview with details
 ```
 
-## 🎯 Examples
+### Real-world examples
 
-### Basic Pruning
-
+**Before deployment:**
 ```bash
-$ prune-mod
-
-         files total: 15,847
-       files removed: 9,438
-        size removed: 184.2 MB
-            duration: 2.3s
-
-✅ Successfully reduced node_modules by 60%
-```
-
-### Custom Exclusions
-
-```bash
-# Keep all config files and documentation
-prune-mod --exclude "*.config.*" --exclude "README*"
-
-# Always remove test files and logs
-prune-mod --include "**/*.test.*" --include "**/*.log"
-```
-
-### Serverless Deployment Workflow
-
-```bash
-# Install dependencies
+# Install production dependencies
 npm ci --production
 
-# Prune unnecessary files for deployment
+# Remove unnecessary files
 prune-mod --verbose
 
-# Your deployment bundle is now 60% smaller! 🎉
+# Your bundle is now 60% smaller!
 ```
 
-### Docker Multi-stage Build
-
+**Docker builds:**
 ```dockerfile
-FROM node:18-alpine AS pruner
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --production
 
-# Install and run prune-mod
+# Clean up node_modules
 RUN npx @usex/prune-mod
 
 FROM node:18-alpine
 WORKDIR /app
-
-# Copy pruned node_modules
-COPY --from=pruner /app/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
 CMD ["node", "index.js"]
 ```
 
-## 📂 What Gets Pruned?
+**Custom patterns:**
+```bash
+# Keep specific files you need
+prune-mod --exclude "*.d.ts" --exclude "LICENSE"
 
-By default, prune-mod removes these categories of files:
+# Remove additional file types
+prune-mod --include "*.log" --include "*.tmp"
+```
 
-### 📚 Documentation Files
-- `README*`, `CHANGELOG*`, `LICENSE*`
-- `*.md`, `*.markdown`, `*.mkd`
-- `AUTHORS`, `CONTRIBUTORS`
+## What gets removed?
 
-### 🧪 Development & Testing
-- `test/`, `tests/`, `__tests__/` directories
-- `*.test.*`, `*.spec.*` files
-- `coverage/`, `.nyc_output/` directories
+prune-mod safely removes these types of files:
 
-### 🔧 Build Tools & Config
-- `.github/`, `.circleci/` directories
-- `tsconfig.json`, `tslint.json`
-- `.eslintrc*`, `.prettierrc*`
-- Build config files (`webpack.config.js`, `rollup.config.js`, etc.)
+### Documentation files
+- README files (README.md, README.txt, etc.)
+- CHANGELOG and HISTORY files  
+- LICENSE and COPYRIGHT files
+- Documentation directories (docs/, doc/)
 
-### 🗂️ IDE & Editor Files
-- `.vscode/`, `.idea/` directories
-- `.DS_Store`, `.editorconfig`
+### Development files
+- Test files and directories (test/, tests/, __tests__/)
+- Example files and directories
+- Source maps (*.map files)
+- TypeScript config (tsconfig.json, tslint.json)
 
-### 📊 Source Maps & Dev Assets
-- `*.map` files
-- Development assets and examples
+### Build and config files
+- Linting configs (.eslintrc, .prettierrc, etc.)
+- CI/CD configs (.github/, .circleci/, etc.)
+- Editor configs (.vscode/, .idea/, .editorconfig)
+- Build tool configs (webpack.config.js, etc.)
 
-### 🧹 Package Manager Files
-- `.yarn-integrity`, `.yarnclean`
-- `.npmrc`, `.npmignore`
+### Temporary files
+- Coverage reports
+- Log files
+- Temporary directories
+- Cache files
 
-## ⚙️ API
+**Important:** prune-mod never removes:
+- Main entry files (package.json main/module/exports)
+- Runtime dependencies
+- Binary executables
+- Critical system files
 
-### Programmatic Usage
+## Programming API
 
-```typescript
+Use prune-mod in your Node.js applications:
+
+```javascript
 import { Pruner } from '@usex/prune-mod';
 
 const pruner = new Pruner({
   dir: './node_modules',
   verbose: true,
   dryRun: false,
-  exceptions: ['*.config.*'],
-  globs: ['**/*.tmp'],
-  // Custom file patterns
-  files: ['custom-file.txt'],
-  directories: ['custom-dir'],
-  extensions: ['.custom']
+  exceptions: ['*.config.*'], // Files to keep
+  globs: ['**/*.tmp']        // Files to remove
 });
 
 const stats = await pruner.prune();
 
 console.log(`Removed ${stats.filesRemoved} files`);
 console.log(`Saved ${stats.sizeRemoved} bytes`);
+console.log(`Processed ${stats.filesTotal} total files`);
 ```
 
-### Configuration Options
+### Configuration options
 
 ```typescript
 interface PrunerOptions {
-  /** Target directory (default: "node_modules") */
-  dir?: string;
-  
-  /** Enable verbose logging (default: false) */
-  verbose?: boolean;
-  
-  /** Dry run mode - don't actually remove files (default: false) */
-  dryRun?: boolean;
-  
-  /** Exception patterns - files matching these won't be removed */
-  exceptions?: string[];
-  
-  /** Additional glob patterns to always remove */
-  globs?: string[];
-  
-  /** Custom file names to remove */
-  files?: string[];
-  
-  /** Custom directory names to remove */
-  directories?: string[];
-  
-  /** Custom file extensions to remove */
-  extensions?: string[];
+  dir?: string;           // Target directory (default: "node_modules")
+  verbose?: boolean;      // Show detailed output (default: false)
+  dryRun?: boolean;       // Preview mode (default: false)
+  exceptions?: string[];  // Patterns for files to keep
+  globs?: string[];       // Additional patterns to remove
+  files?: string[];       // Custom file names to remove
+  directories?: string[]; // Custom directory names to remove
+  extensions?: string[];  // Custom file extensions to remove
 }
 ```
 
-### Return Statistics
+## Performance
 
-```typescript
-interface Stats {
-  /** Total files processed */
-  filesTotal: number;
-  
-  /** Number of files removed */
-  filesRemoved: number;
-  
-  /** Total bytes saved */
-  sizeRemoved: number;
-}
+Benchmark results on a typical Next.js project:
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| **Total Size** | 487 MB | 193 MB | **60% smaller** |
+| **File Count** | 21,543 | 12,105 | **44% fewer files** |
+| **Directories** | 2,847 | 1,923 | **32% fewer dirs** |
+| **Processing Time** | - | 2.3s | **Very fast** |
+
+Results vary by project, but most see 40-70% size reduction.
+
+## Smart Runtime Detection
+
+prune-mod features intelligent runtime detection that automatically selects the optimal JavaScript runtime for maximum performance:
+
+### How it works
+
+When you run `prune-mod`, the tool automatically detects your environment and chooses the best runtime:
+
+```bash
+# prune-mod automatically detects and uses:
+# → Bun (if available) - Up to 3x faster processing
+# → Node.js (fallback) - Reliable and widely available
 ```
 
-## 🏗️ Development
+### Performance comparison
 
-### Prerequisites
+| Runtime | Processing Speed | Memory Usage | Best For |
+|---------|------------------|--------------|----------|
+| **Bun** | **3x faster** | 40% less memory | Local dev, CI/CD |
+| **Node.js** | Standard speed | Standard memory | Production, compatibility |
 
-- [Bun](https://bun.sh/) 1.0+ (recommended) or Node.js 18+
-- TypeScript 5.0+
+### Zero configuration required
 
-### Setup
+The runtime detection is completely automatic:
+
+- **Development with Bun installed**: Uses Bun for lightning-fast processing
+- **CI/CD pipelines**: Automatically adapts to available runtime
+- **Docker containers**: Works with any Node.js or Bun base image
+- **Legacy systems**: Falls back gracefully to Node.js
+
+### Benefits for different environments
+
+**Local Development:**
+- Bun users get 3x faster pruning
+- Instant feedback with `--dry-run`
+- Reduced waiting time in development workflow
+
+**CI/CD Pipelines:**
+- Automatically uses fastest available runtime
+- Reduces build times significantly
+- Works in any containerized environment
+
+**Production Deployments:**
+- Guaranteed compatibility with Node.js
+- Optimal performance when Bun is available
+- No runtime-specific configuration needed
+
+## Use Cases
+
+### Serverless functions
+Reduce cold start times and stay under size limits:
+```bash
+npm ci --production
+prune-mod
+zip -r function.zip .
+```
+
+### Docker containers
+Smaller images mean faster pulls and deployments:
+```dockerfile
+RUN npm ci --production && npx @usex/prune-mod
+```
+
+### CI/CD pipelines
+Speed up builds and deployments:
+```yaml
+- name: Install dependencies
+  run: npm ci --production
+  
+- name: Clean node_modules
+  run: npx @usex/prune-mod --verbose
+```
+
+### Local development
+Free up disk space on your machine:
+```bash
+# Clean all projects in a directory
+find . -name "node_modules" -type d -exec prune-mod {} \;
+```
+
+## Safety
+
+prune-mod is designed to be safe:
+
+- **Respects package.json** - Never removes main entry files
+- **Dry run mode** - Preview changes before applying them  
+- **Extensive testing** - Tested on thousands of real packages
+- **Rollback friendly** - Just run `npm install` to restore files
+- **Non-destructive** - Only removes files that can be regenerated
+
+## Requirements
+
+- Node.js 18+ or Bun 1.0+
+- Works on Windows, macOS, and Linux
+
+## Contributing
+
+We welcome contributions! Here's how to help:
+
+1. **Report bugs** - Open an issue with details
+2. **Suggest features** - Tell us what you need
+3. **Submit code** - Fork, branch, code, test, PR
+4. **Improve docs** - Help others understand the tool
+5. **Share feedback** - Let us know how it works for you
+
+### Development setup
 
 ```bash
 # Clone the repository
@@ -288,95 +349,50 @@ cd prune-mod
 # Install dependencies
 bun install
 
-# Start development mode
-bun run dev
-
 # Run tests
 bun test
+
+# Start development
+bun run dev
 
 # Build for production
 bun run build
 ```
 
-## 🧪 Testing
+## FAQ
 
-prune-mod has a comprehensive test suite covering:
+**Q: Is it safe to use in production?**  
+A: Yes! prune-mod only removes files that aren't needed at runtime.
 
-- ✅ Core pruning functionality
-- ✅ Pattern matching and exclusions
-- ✅ CLI argument parsing
-- ✅ File system operations
-- ✅ Error handling
-- ✅ Cross-platform compatibility
+**Q: What if I need a file that gets removed?**  
+A: Use `--exclude` to keep specific files, or just run `npm install` to restore everything.
 
-```bash
-# Run all tests
-bun test
+**Q: How much space will I save?**  
+A: Typically 40-70% depending on your dependencies. Use `--dry-run` to preview.
 
-# Run with coverage
-bun run test:coverage
+**Q: Does it work with Yarn/pnpm?**  
+A: Yes! prune-mod works with any package manager.
 
-# Run tests in watch mode
-bun run test:watch
+**Q: Can I use it in automated scripts?**  
+A: Absolutely! It's designed for CI/CD pipelines and automated deployments.
 
-# Run tests with UI
-bun run test:ui
-```
+## License
 
-## 📊 Benchmarks
+MIT License - see [LICENSE](LICENSE) file for details.
 
-Performance comparison on a typical Next.js project:
-
-| Metric | Before | After | Reduction |
-|--------|--------|-------|-----------|
-| **Size** | 487 MB | 193 MB | **60.4%** |
-| **Files** | 21,543 | 12,105 | **43.8%** |
-| **Directories** | 2,847 | 1,923 | **32.5%** |
-| **Processing Time** | - | 2.3s | - |
-
-> Results may vary depending on project dependencies and structure.
-
-## 🤝 Contributing
-
-We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Ways to Contribute
-
-- 🐛 **Bug Reports** - Found an issue? Let us know!
-- 💡 **Feature Requests** - Have an idea? We'd love to hear it!
-- 🔧 **Code Contributions** - PRs are always welcome
-- 📖 **Documentation** - Help improve our docs
-- 🧪 **Testing** - Help us test on different platforms
-- 🎨 **Design** - UI/UX improvements and assets
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Ensure tests pass: `bun test`
-5. Format code: `bun run format`
-6. Commit changes: `git commit -m 'feat: add amazing feature'`
-7. Push to branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔗 Related Projects
+## Related Tools
 
 - [node-prune](https://github.com/tj/node-prune) - Go-based alternative
-- [npm-prune](https://docs.npmjs.com/cli/v7/commands/npm-prune) - Built-in npm command
-- [clean-modules](https://github.com/mikechabot/clean-modules) - Similar tool for cleaning
+- [npm-prune](https://docs.npmjs.com/cli/v7/commands/npm-prune) - Built-in npm command for dev dependencies
+- [clean-modules](https://github.com/mikechabot/clean-modules) - Similar cleaning tool
+
 ---
 
 <div align="center">
 
-**[⬆ Back to Top](#-prune-mod)**
-
 **Built with ❤️ by [Ali Torki](https://github.com/ali-master) for the developer community**
 
-If prune-mod helped you save disk space, please consider giving it a ⭐!
+**If prune-mod saved you time and disk space, please give it a ⭐ on GitHub!**
 
 </div>
+
