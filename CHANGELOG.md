@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.2](https://github.com/ali-master/prune-mod/compare/v0.0.1...v0.0.2) (2025-08-09)
+
+
+### Bug Fixes
+
+* git unignore the tests fixture folder ([975347a](https://github.com/ali-master/prune-mod/commit/975347ac4b092252e5c3b4eb66523d334fdea8c7))
+
 ### 0.0.1 (2025-08-09)
 
 
