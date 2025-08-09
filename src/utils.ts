@@ -1,32 +1,38 @@
 import { consola } from "consola";
 
+// Pre-computed constants for better performance
+const UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
+const KILO = 1024;
+const LOG_KILO = Math.log(KILO);
+
 export function formatBytes(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let size = bytes;
-  let unitIndex = 0;
+  if (bytes === 0) return "0.0 B";
+  if (bytes < KILO) return `${bytes.toFixed(1)} B`;
 
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
+  // Use logarithm for faster unit calculation instead of while loop
+  const unitIndex = Math.min(Math.floor(Math.log(bytes) / LOG_KILO), UNITS.length - 1);
+  const size = bytes / Math.pow(KILO, unitIndex);
 
-  return `${size.toFixed(1)} ${units[unitIndex]}`;
+  return `${size.toFixed(1)} ${UNITS[unitIndex]}`;
 }
 
 export function formatNumber(num: number): string {
   return num.toLocaleString();
 }
 
+// Pre-computed constants
+const MS_IN_SECOND = 1000;
+const SEC_IN_MINUTE = 60;
+const MS_IN_MINUTE = MS_IN_SECOND * SEC_IN_MINUTE;
+
 export function formatDuration(ms: number): string {
-  if (ms < 1000) {
+  if (ms < MS_IN_SECOND) {
     return `${ms}ms`;
   }
-  const seconds = ms / 1000;
-  if (seconds < 60) {
-    return `${seconds.toFixed(1)}s`;
+  if (ms < MS_IN_MINUTE) {
+    return `${(ms / MS_IN_SECOND).toFixed(1)}s`;
   }
-  const minutes = seconds / 60;
-  return `${minutes.toFixed(1)}m`;
+  return `${(ms / MS_IN_MINUTE).toFixed(1)}m`;
 }
 
 export function output(name: string, value: string): void {

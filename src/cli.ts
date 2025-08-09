@@ -68,25 +68,33 @@ async function main() {
     process.exit(0);
   }
 
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint(); // More precise timing
   const dir = positionals[0] || "node_modules";
+
+  // Optimize array creation - avoid unnecessary checks
+  const exceptions = values.exclude || [];
+  const globs = values.include || [];
 
   const pruner = new Pruner({
     dir,
-    verbose: values.verbose as boolean,
-    exceptions: Array.isArray(values.exclude) ? (values.exclude as string[]) : [],
-    globs: Array.isArray(values.include) ? (values.include as string[]) : [],
-    dryRun: values["dry-run"] as boolean,
+    verbose: Boolean(values.verbose),
+    exceptions: Array.isArray(exceptions) ? (exceptions as Array<string>) : [],
+    globs: Array.isArray(globs) ? (globs as Array<string>) : [],
+    dryRun: Boolean(values["dry-run"]),
   });
 
   try {
     const stats = await pruner.prune();
 
+    // Calculate duration in nanoseconds for better precision, then convert to ms
+    const endTime = process.hrtime.bigint();
+    const durationMs = Number(endTime - startTime) / 1_000_000;
+
     consola.info("");
     output("files total", formatNumber(stats.filesTotal));
     output("files removed", formatNumber(stats.filesRemoved));
     output("size removed", formatBytes(stats.sizeRemoved));
-    output("duration", formatDuration(Date.now() - startTime));
+    output("duration", formatDuration(durationMs));
     consola.info("");
   } catch (error) {
     consola.error("Error:", error);
