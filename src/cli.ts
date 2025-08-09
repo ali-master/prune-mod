@@ -41,7 +41,7 @@ const { values, positionals } = parseArgs({
 });
 
 function showHelp() {
-  consola.log(`
+  consola.info(`
 prune-mod - Remove unnecessary files from node_modules
 
 Usage:
@@ -82,12 +82,12 @@ async function main() {
   try {
     const stats = await pruner.prune();
 
-    consola.log("");
+    consola.info("");
     output("files total", formatNumber(stats.filesTotal));
     output("files removed", formatNumber(stats.filesRemoved));
     output("size removed", formatBytes(stats.sizeRemoved));
     output("duration", formatDuration(Date.now() - startTime));
-    consola.log("");
+    consola.info("");
   } catch (error) {
     consola.error("Error:", error);
     process.exit(1);

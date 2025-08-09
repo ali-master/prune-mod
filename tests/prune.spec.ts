@@ -204,14 +204,14 @@ describe("Pruner", () => {
     });
 
     it("should handle verbose mode", async () => {
-      const consolaLogSpy = vi.spyOn(consola, "log");
+      const consolaInfoSpy = vi.spyOn(consola, "info");
       const pruner = new Pruner({ dir: testDir, verbose: true });
       await pruner.prune();
 
-      expect(consolaLogSpy).toHaveBeenCalled();
-      expect(consolaLogSpy.mock.calls.some((call) => call[0].includes("Prune"))).toBe(true);
+      expect(consolaInfoSpy).toHaveBeenCalled();
+      expect(consolaInfoSpy.mock.calls.some((call) => call[0].includes("Prune"))).toBe(true);
 
-      consolaLogSpy.mockRestore();
+      consolaInfoSpy.mockRestore();
     });
 
     it("should handle errors during pruning", async () => {

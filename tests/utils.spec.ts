@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { consola } from "consola";
 import { formatBytes, formatNumber, formatDuration, output } from "../src/utils";
 import { createTestSuite, ConsolaMockManager, TestAssertions } from "./test-utils";
 
@@ -134,25 +135,24 @@ describe("Utils", () => {
   describe("output", () => {
     const testSuite = createTestSuite("Utils", { consolaMock: false });
     let consolaMock: ConsolaMockManager;
-    let consolaSpy: ReturnType<typeof vi.spyOn>;
+    let consoleSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(async () => {
       await testSuite.setup("utils-output");
       consolaMock = new ConsolaMockManager();
-      const consola = (await import("consola")).consola;
-      consolaSpy = vi.spyOn(consola, "log").mockImplementation(() => {});
+      consoleSpy = vi.spyOn(consola, "info").mockImplementation(() => {});
     });
 
     afterEach(async () => {
-      consolaSpy.mockRestore();
+      consoleSpy.mockRestore();
       await testSuite.teardown();
     });
 
     it("should format output with padded name and value", () => {
       output("Test", "Value");
 
-      expect(consolaSpy).toHaveBeenCalledOnce();
-      const call = consolaSpy.mock.calls[0][0];
+      expect(consoleSpy).toHaveBeenCalledOnce();
+      const call = consoleSpy.mock.calls[0][0];
 
       // Check for content with new format (name: value)
       TestAssertions.expectStringToContainPatterns(call, ["Test", "Value", ":"]);
@@ -161,7 +161,7 @@ describe("Utils", () => {
     it("should pad name to 20 characters", () => {
       output("Short", "Value");
 
-      const call = consolaSpy.mock.calls[0][0];
+      const call = consoleSpy.mock.calls[0][0];
       // "Short" padded to 20 chars should have 15 leading spaces before the colon
       expect(call).toMatch(/\s{15}Short:/);
     });
@@ -169,8 +169,8 @@ describe("Utils", () => {
     it("should handle long names", () => {
       output("VeryLongNameThatExceedsTwentyChars", "Value");
 
-      expect(consolaSpy).toHaveBeenCalledOnce();
-      const call = consolaSpy.mock.calls[0][0];
+      expect(consoleSpy).toHaveBeenCalledOnce();
+      const call = consoleSpy.mock.calls[0][0];
       expect(call).toContain("VeryLongNameThatExceedsTwentyChars");
       expect(call).toContain("Value");
     });
@@ -178,16 +178,16 @@ describe("Utils", () => {
     it("should handle empty strings", () => {
       output("", "");
 
-      expect(consolaSpy).toHaveBeenCalledOnce();
-      const call = consolaSpy.mock.calls[0][0];
+      expect(consoleSpy).toHaveBeenCalledOnce();
+      const call = consoleSpy.mock.calls[0][0];
       expect(call).toBe("                    : ");
     });
 
     it("should handle special characters in name and value", () => {
       output("Name with spaces", "Value with $pecial ch@rs!");
 
-      expect(consolaSpy).toHaveBeenCalledOnce();
-      const call = consolaSpy.mock.calls[0][0];
+      expect(consoleSpy).toHaveBeenCalledOnce();
+      const call = consoleSpy.mock.calls[0][0];
       expect(call).toContain("Name with spaces");
       expect(call).toContain("Value with $pecial ch@rs!");
     });
@@ -195,7 +195,7 @@ describe("Utils", () => {
     it("should produce correctly formatted output", () => {
       output("Files", "1,234");
 
-      const call = consolaSpy.mock.calls[0][0];
+      const call = consoleSpy.mock.calls[0][0];
       // Should contain "Files" padded to 20 chars, followed by ": " and the value
       expect(call).toBe("               Files: 1,234");
     });
@@ -203,8 +203,8 @@ describe("Utils", () => {
     it("should handle numeric values converted to strings", () => {
       output("Count", String(42));
 
-      expect(consolaSpy).toHaveBeenCalledOnce();
-      const call = consolaSpy.mock.calls[0][0];
+      expect(consoleSpy).toHaveBeenCalledOnce();
+      const call = consoleSpy.mock.calls[0][0];
       expect(call).toContain("Count");
       expect(call).toContain("42");
     });
@@ -214,9 +214,9 @@ describe("Utils", () => {
       output("Second", "Value2");
       output("Third", "Value3");
 
-      expect(consolaSpy).toHaveBeenCalledTimes(3);
+      expect(consoleSpy).toHaveBeenCalledTimes(3);
 
-      const calls = consolaSpy.mock.calls.map((c) => c[0]);
+      const calls = consoleSpy.mock.calls.map((c) => c[0]);
       expect(calls[0]).toContain("First");
       expect(calls[0]).toContain("Value1");
       expect(calls[1]).toContain("Second");

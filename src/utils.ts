@@ -30,8 +30,8 @@ export function formatDuration(ms: number): string {
 }
 
 export function output(name: string, value: string): void {
-  // Use consola for formatted output
-  consola.log(`${name.padStart(20)}: ${value}`);
+  // Use consola.info for formatted output
+  consola.info(`${name.padStart(20)}: ${value}`);
 }
 
 /**

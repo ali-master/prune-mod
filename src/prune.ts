@@ -57,7 +57,7 @@ export class Pruner {
               if (this.dryRun) {
                 consola.info(`[DRY RUN] Prune directory: ${fullPath}`);
               } else {
-                consola.log(`Prune directory: ${fullPath}`);
+                consola.info(`Prune directory: ${fullPath}`);
               }
             }
             const dirStats = await this.getDirStats(fullPath);
@@ -74,7 +74,7 @@ export class Pruner {
               if (this.dryRun) {
                 consola.info(`[DRY RUN] Prune file: ${fullPath}`);
               } else {
-                consola.log(`Prune file: ${fullPath}`);
+                consola.info(`Prune file: ${fullPath}`);
               }
             }
             const stat = await fs.promises.stat(fullPath);
