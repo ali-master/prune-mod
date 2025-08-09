@@ -2,14 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { consola } from "consola";
 import * as fs from "fs";
 import * as path from "path";
-import {
-  Pruner,
-  DefaultFiles,
-  DefaultDirectories,
-  DefaultExtensions,
-  type PrunerOptions,
-  type Stats,
-} from "../src/prune";
+import { Pruner } from "../src/prune";
+import { DefaultFiles, DefaultDirectories, DefaultExtensions } from "../src/constants";
+import type { PrunerOptions, Stats } from "../src/types";
 import {
   createTestSuite,
   TestDataGenerator,
