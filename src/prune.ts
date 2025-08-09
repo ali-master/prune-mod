@@ -4,6 +4,7 @@ import { logger } from "./logger";
 import { minimatch } from "minimatch";
 import { DefaultDirectories, DefaultExtensions, DefaultFiles } from "./constants";
 import type { PrunerOptions, Stats } from "./types";
+import { WorkspaceDetector, type WorkspaceInfo, WorkspaceType } from "./workspace";
 
 export class Pruner {
   private readonly dir: string;
@@ -18,6 +19,11 @@ export class Pruner {
   private packageJsonCache = new Map<string, any>();
   private readonly DIRECTORY_CONCURRENCY = 5;
   private readonly REMOVAL_CONCURRENCY = 10;
+  private readonly workspace: boolean;
+  private readonly workspaceRoot?: string;
+  private readonly includeRoot: boolean;
+  private workspaceDetector: WorkspaceDetector;
+  private workspaceInfo?: WorkspaceInfo;
 
   constructor(options: PrunerOptions = {}) {
     this.dir = options.dir || "node_modules";
@@ -28,27 +34,95 @@ export class Pruner {
     this.globs = options.globs || [];
     this.dirs = new Set(options.directories || DefaultDirectories);
     this.files = new Set(options.files || DefaultFiles);
+    this.workspace = options.workspace || false;
+    this.workspaceRoot = options.workspaceRoot;
+    this.includeRoot = options.includeRoot !== false; // Default to true
+    this.workspaceDetector = new WorkspaceDetector();
   }
 
   async prune(): Promise<Stats> {
+    // Calculate initial size before pruning
+    const sizeBefore = await this.calculateTotalSize();
+
     const stats: Stats = {
       filesTotal: 0,
       filesRemoved: 0,
       sizeRemoved: 0,
+      sizeBefore: sizeBefore,
+      sizeAfter: 0,
     };
 
     // Clear caches to free memory
     this.packageJsonCache.clear();
     this.removeQueue.length = 0;
 
-    await this.walkDirectory(this.dir, stats);
+    if (this.workspace) {
+      await this.pruneWorkspace(stats);
+    } else {
+      await this.walkDirectory(this.dir, stats);
+    }
+
     await this.processRemoveQueue(stats);
+
+    // Calculate final size
+    stats.sizeAfter = stats.sizeBefore - stats.sizeRemoved;
 
     // Clear caches after processing
     this.packageJsonCache.clear();
     this.removeQueue.length = 0;
 
     return stats;
+  }
+
+  private async pruneWorkspace(stats: Stats): Promise<void> {
+    // Detect workspace configuration
+    const workspaceRoot = this.workspaceRoot || this.dir;
+    this.workspaceInfo = await this.workspaceDetector.detect(workspaceRoot);
+
+    if (this.workspaceInfo.type === WorkspaceType.None) {
+      logger.info("No workspace configuration detected, falling back to standard pruning");
+      await this.walkDirectory(this.dir, stats);
+      return;
+    }
+
+    logger.info(`Detected ${this.workspaceInfo.type} workspace at ${this.workspaceInfo.root}`);
+
+    if (this.verbose) {
+      logger.info(`Found ${this.workspaceInfo.packages.length} workspace packages`);
+    }
+
+    // Prune root node_modules if requested
+    if (this.includeRoot && this.workspaceInfo.hoistedNodeModules) {
+      const rootNodeModules = this.workspaceInfo.hoistedNodeModules;
+      try {
+        await fs.promises.access(rootNodeModules);
+        if (this.verbose) {
+          logger.info(`Pruning root node_modules at ${rootNodeModules}`);
+        }
+        await this.walkDirectory(rootNodeModules, stats);
+      } catch {
+        if (this.verbose) {
+          logger.info(`Root node_modules not found at ${rootNodeModules}`);
+        }
+      }
+    }
+
+    // Prune each package's node_modules
+    for (const packagePath of this.workspaceInfo.packages) {
+      const packageNodeModules = path.join(packagePath, "node_modules");
+      try {
+        await fs.promises.access(packageNodeModules);
+        if (this.verbose) {
+          logger.info(`Pruning package node_modules at ${packageNodeModules}`);
+        }
+        await this.walkDirectory(packageNodeModules, stats);
+      } catch {
+        // Package doesn't have node_modules, skip
+        if (this.verbose) {
+          logger.info(`No node_modules found in package at ${packagePath}`);
+        }
+      }
+    }
   }
 
   private async walkDirectory(dir: string, stats: Stats): Promise<void> {
@@ -357,5 +431,80 @@ export class Pruner {
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
     }
+  }
+
+  private async calculateTotalSize(): Promise<number> {
+    let totalSize = 0;
+    const directories: string[] = [];
+
+    if (this.workspace) {
+      // Calculate size for workspace
+      const workspaceRoot = this.workspaceRoot || this.dir;
+      const info = await this.workspaceDetector.detect(workspaceRoot);
+
+      if (info.type !== WorkspaceType.None) {
+        // Add root node_modules if it exists and includeRoot is true
+        if (this.includeRoot && info.hoistedNodeModules) {
+          try {
+            await fs.promises.access(info.hoistedNodeModules);
+            directories.push(info.hoistedNodeModules);
+          } catch {
+            // Directory doesn't exist
+          }
+        }
+
+        // Add package node_modules
+        for (const packagePath of info.packages) {
+          const nodeModules = path.join(packagePath, "node_modules");
+          try {
+            await fs.promises.access(nodeModules);
+            directories.push(nodeModules);
+          } catch {
+            // Directory doesn't exist
+          }
+        }
+      } else {
+        directories.push(this.dir);
+      }
+    } else {
+      directories.push(this.dir);
+    }
+
+    // Calculate total size for all directories
+    for (const dir of directories) {
+      totalSize += await this.getDirectorySize(dir);
+    }
+
+    return totalSize;
+  }
+
+  private async getDirectorySize(dir: string): Promise<number> {
+    let size = 0;
+
+    try {
+      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+
+      const promises = entries.map(async (entry) => {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+          return this.getDirectorySize(fullPath);
+        } else {
+          try {
+            const stat = await fs.promises.stat(fullPath);
+            return stat.size;
+          } catch {
+            return 0;
+          }
+        }
+      });
+
+      const sizes = await Promise.all(promises);
+      size = sizes.reduce((acc, s) => acc + s, 0);
+    } catch {
+      // Error reading directory
+    }
+
+    return size;
   }
 }

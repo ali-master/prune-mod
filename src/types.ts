@@ -2,6 +2,8 @@ export interface Stats {
   filesTotal: number;
   filesRemoved: number;
   sizeRemoved: number;
+  sizeBefore: number;
+  sizeAfter: number;
 }
 
 export interface PrunerOptions {
@@ -13,4 +15,7 @@ export interface PrunerOptions {
   files?: string[];
   verbose?: boolean;
   dryRun?: boolean;
+  workspace?: boolean;
+  workspaceRoot?: string;
+  includeRoot?: boolean;
 }
