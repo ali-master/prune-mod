@@ -104,6 +104,7 @@ Options:
   -w, --workspace       Enable workspace/monorepo mode
   --workspace-root <dir> Specify workspace root (auto-detected if not provided)
   --no-root             Skip pruning root node_modules in workspace mode
+  --experimental-default-files Enable experimental extended file list for more aggressive pruning
   -h, --help            Show help
 
 Examples:
@@ -116,6 +117,10 @@ Workspace Examples:
   prune-mod --workspace                 # Auto-detect and prune all packages
   prune-mod -w --no-root               # Prune only package node_modules
   prune-mod -w --workspace-root /monorepo # Specify workspace root
+  
+Experimental Examples:
+  prune-mod --experimental-default-files    # Use extended file list
+  prune-mod -w --experimental-default-files # Combine with workspace mode
 ```
 
 ### Real-world examples
@@ -193,6 +198,30 @@ prune-mod safely removes these types of files:
 - Binary executables
 - Critical system files
 
+### Experimental Extended File List
+
+For even more aggressive space savings, prune-mod offers an experimental mode that removes additional safe files:
+
+```bash
+# Enable experimental extended file list
+prune-mod --experimental-default-files
+
+# Use with other options
+prune-mod --experimental-default-files --workspace --verbose
+```
+
+**Experimental mode adds 140+ additional file patterns** including:
+- Extended documentation files (CHANGELOG.md, CODE_OF_CONDUCT.md, SECURITY.md)
+- Advanced configuration files (webpack.config.*, rollup.config.*, vite.config.*)
+- Git and version control files (.gitignore, .gitkeep, .dockerignore)
+- CI/CD configurations (azure-pipelines.yml, .drone.yml, buildkite.yml)
+- Code quality tools (.codeclimate.yml, codecov.yml, sonar-project.properties)
+- Build outputs and caches (dist/, build/, .cache/, .next/, .nuxt/)
+- Source maps and minified files (*.map, *.min.js, *.min.css)
+- Environment and runtime files (.env.example, .nvmrc, .python-version)
+
+**Safety note:** Experimental mode is thoroughly tested but more aggressive. Always test with `--dry-run` first to ensure it meets your needs.
+
 ## Programming API
 
 Use prune-mod in your Node.js applications:
@@ -205,7 +234,10 @@ const pruner = new Pruner({
   verbose: true,
   dryRun: false,
   exceptions: ['*.config.*'], // Files to keep
-  globs: ['**/*.tmp']        // Files to remove
+  globs: ['**/*.tmp'],        // Files to remove
+  experimental: {
+    defaultFiles: true        // Enable extended file list
+  }
 });
 
 const stats = await pruner.prune();
@@ -254,6 +286,11 @@ interface PrunerOptions {
   workspace?: boolean;    // Enable workspace mode (default: false)
   workspaceRoot?: string; // Custom workspace root (auto-detected if not set)
   includeRoot?: boolean;  // Include root node_modules (default: true)
+  
+  // Experimental options
+  experimental?: {
+    defaultFiles?: boolean; // Enable extended file list (default: false)
+  };
 }
 ```
 

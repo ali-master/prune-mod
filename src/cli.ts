@@ -51,6 +51,11 @@ const { values, positionals } = parseArgs({
       default: false,
       description: "Skip pruning the root node_modules in workspace mode",
     },
+    "experimental-default-files": {
+      type: "boolean",
+      default: false,
+      description: "Enable experimental extended file list for more aggressive pruning",
+    },
   },
   strict: false,
   allowPositionals: true,
@@ -64,14 +69,15 @@ Usage:
   prune-mod [options] [directory]
 
 Options:
-  -v, --verbose         Verbose log output
-  --exclude <glob>      Glob of files that should not be pruned (can be specified multiple times)
-  --include <glob>      Globs of files that should always be pruned (can be specified multiple times)
-  -d, --dry-run         Show what would be pruned without actually removing files
-  -w, --workspace       Enable workspace/monorepo mode to prune all packages
-  --workspace-root <dir> Specify the workspace root directory (auto-detected if not provided)
-  --no-root             Skip pruning the root node_modules in workspace mode
-  -h, --help            Show help
+  -v, --verbose                   Verbose log output
+  --exclude <glob>                Glob of files that should not be pruned (can be specified multiple times)
+  --include <glob>                Globs of files that should always be pruned (can be specified multiple times)
+  -d, --dry-run                   Show what would be pruned without actually removing files
+  -w, --workspace                 Enable workspace/monorepo mode to prune all packages
+  --workspace-root <dir>          Specify the workspace root directory (auto-detected if not provided)
+  --no-root                       Skip pruning the root node_modules in workspace mode
+  --experimental-default-files    Enable experimental extended file list for more aggressive pruning
+  -h, --help                      Show help
 
 Examples:
   prune-mod                    # Prune node_modules in current directory
@@ -83,6 +89,10 @@ Workspace/Monorepo Examples:
   prune-mod --workspace        # Auto-detect and prune all packages in workspace
   prune-mod -w --no-root       # Prune only package node_modules, skip root
   prune-mod -w --workspace-root /path/to/monorepo  # Specify workspace root
+  
+Experimental Examples:
+  prune-mod --experimental-default-files  # Use extended file list for more aggressive pruning
+  prune-mod -w --experimental-default-files  # Combine workspace mode with experimental files
 `);
 }
 
@@ -108,6 +118,9 @@ async function main() {
     workspace: Boolean(values.workspace),
     workspaceRoot: values["workspace-root"] as string | undefined,
     includeRoot: !Boolean(values["no-root"]),
+    experimental: {
+      defaultFiles: Boolean(values["experimental-default-files"]),
+    },
   });
 
   try {

@@ -3,7 +3,12 @@ import { logger } from "../src/logger";
 import * as fs from "fs";
 import * as path from "path";
 import { Pruner } from "../src/prune";
-import { DefaultFiles, DefaultDirectories, DefaultExtensions } from "../src/constants";
+import {
+  DefaultFiles,
+  DefaultDirectories,
+  DefaultExtensions,
+  ExperimentalDefaultFiles,
+} from "../src/constants";
 import type { PrunerOptions, Stats } from "../src/types";
 import {
   createTestSuite,
@@ -64,6 +69,80 @@ describe("Pruner", () => {
       });
       expect(pruner["exts"]).toContain(".custom");
       expect(pruner["exts"].size).toBe(1); // Only custom extensions
+    });
+
+    it("should use default files when experimental mode is disabled", () => {
+      const pruner = new Pruner();
+      const defaultFileCount = DefaultFiles.length;
+      expect(pruner["files"].size).toBe(defaultFileCount);
+
+      // Check some standard default files
+      expect(pruner["files"]).toContain("README");
+      expect(pruner["files"]).toContain("LICENSE");
+      expect(pruner["files"]).toContain(".babelrc");
+    });
+
+    it("should include experimental files when experimental mode is enabled", () => {
+      const pruner = new Pruner({
+        experimental: {
+          defaultFiles: true,
+        },
+        verbose: true,
+      });
+
+      const expectedCount = DefaultFiles.length + ExperimentalDefaultFiles.length;
+      expect(pruner["files"].size).toBe(expectedCount);
+
+      // Check that default files are still included
+      expect(pruner["files"]).toContain("README");
+      expect(pruner["files"]).toContain("LICENSE");
+      expect(pruner["files"]).toContain(".babelrc");
+
+      // Check that experimental files are included
+      expect(pruner["files"]).toContain("README.md");
+      expect(pruner["files"]).toContain("CHANGELOG.md");
+      expect(pruner["files"]).toContain(".gitignore");
+      expect(pruner["files"]).toContain("webpack.config.js");
+      expect(pruner["files"]).toContain("docker-compose.yml");
+      expect(pruner["files"]).toContain(".env.example");
+    });
+
+    it("should log experimental mode message when verbose and experimental enabled", () => {
+      const loggerSpy = vi.spyOn(logger, "info");
+
+      new Pruner({
+        experimental: { defaultFiles: true },
+        verbose: true,
+      });
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `Experimental mode: Using extended file list with ${ExperimentalDefaultFiles.length} additional files`,
+        ),
+      );
+    });
+
+    it("should not log experimental mode message when not verbose", () => {
+      const loggerSpy = vi.spyOn(logger, "info");
+
+      new Pruner({
+        experimental: { defaultFiles: true },
+        verbose: false,
+      });
+
+      expect(loggerSpy).not.toHaveBeenCalledWith(expect.stringContaining("Experimental mode"));
+    });
+
+    it("should handle custom files with experimental mode", () => {
+      const customFiles = ["custom.file"];
+      const pruner = new Pruner({
+        files: customFiles,
+        experimental: { defaultFiles: true },
+      });
+
+      // When custom files are provided, they should be used instead of defaults
+      expect(pruner["files"].size).toBe(1);
+      expect(pruner["files"]).toContain("custom.file");
     });
   });
 
@@ -268,6 +347,48 @@ describe("Pruner", () => {
       );
 
       loggerErrorSpy.mockRestore();
+    });
+
+    it("should prune experimental files when experimental mode is enabled", async () => {
+      // Create experimental files that should be pruned
+      const experimentalFiles = [
+        "test-package/README.md",
+        "test-package/CHANGELOG.md",
+        "test-package/.gitignore",
+        "test-package/webpack.config.js",
+        "test-package/docker-compose.yml",
+        "test-package/.env.example",
+        "test-package/dist/index.js",
+        "test-package/.next/build-manifest.json",
+      ];
+
+      // Create the files
+      for (const filePath of experimentalFiles) {
+        const fullPath = path.join(testDir, filePath);
+        await TestDataGenerator.createTestFile(fullPath, `Test content for ${filePath}`);
+      }
+
+      // Prune with experimental mode enabled
+      const experimentalPruner = new Pruner({
+        dir: testDir,
+        experimental: { defaultFiles: true },
+      });
+      await experimentalPruner.prune();
+
+      // Check that experimental files are removed
+      for (const experimentalFile of [
+        "README.md",
+        "CHANGELOG.md",
+        ".gitignore",
+        "webpack.config.js",
+      ]) {
+        const fullPath = path.join(testDir, "test-package", experimentalFile);
+        expect(fs.existsSync(fullPath)).toBe(false);
+      }
+
+      // Essential files should remain
+      const essentialFile = path.join(testDir, "test-package", "package.json");
+      expect(fs.existsSync(essentialFile)).toBe(true);
     });
   });
 

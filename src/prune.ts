@@ -1,7 +1,12 @@
 import * as fs from "fs";
 import { logger } from "./logger";
 import { minimatch } from "minimatch";
-import { DefaultDirectories, DefaultExtensions, DefaultFiles } from "./constants";
+import {
+  DefaultDirectories,
+  DefaultExtensions,
+  DefaultFiles,
+  ExperimentalDefaultFiles,
+} from "./constants";
 import type { PrunerOptions, Stats } from "./types";
 import { WorkspaceDetector, type WorkspaceInfo, WorkspaceType } from "./workspace";
 import {
@@ -46,7 +51,19 @@ export class Pruner {
     this.excepts = options.exceptions || [];
     this.globs = options.globs || [];
     this.dirs = new Set(options.directories || DefaultDirectories);
-    this.files = new Set(options.files || DefaultFiles);
+
+    // Handle experimental default files
+    let defaultFiles = [...DefaultFiles] as string[];
+    if (options.experimental?.defaultFiles) {
+      defaultFiles = [...DefaultFiles, ...ExperimentalDefaultFiles] as string[];
+      if (this.verbose) {
+        logger.info(
+          `Experimental mode: Using extended file list with ${ExperimentalDefaultFiles.length} additional files`,
+        );
+      }
+    }
+    this.files = new Set(options.files || defaultFiles);
+
     this.workspace = options.workspace || false;
     this.workspaceRoot = options.workspaceRoot;
     this.includeRoot = options.includeRoot !== false; // Default to true

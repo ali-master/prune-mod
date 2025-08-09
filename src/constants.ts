@@ -69,6 +69,182 @@ export const DefaultFiles = [
   "tslint.json",
 ] as const;
 
+export const ExperimentalDefaultFiles = [
+  // Documentation & Project Files
+  "CHANGELOG",
+  "CHANGELOG.md",
+  "CHANGELOG.txt",
+  "HISTORY",
+  "HISTORY.md",
+  "CONTRIBUTING",
+  "CONTRIBUTING.md",
+  "CONTRIBUTING.txt",
+  "README.md",
+  "README.txt",
+  "README.rst",
+  "CODE_OF_CONDUCT.md",
+  "SECURITY.md",
+  "SUPPORT.md",
+  "FUNDING.yml",
+
+  // Extended Configuration Files
+  ".eslintrc.yaml",
+  ".babelrc.js",
+  ".babelrc.json",
+  "babel.config.js",
+  "babel.config.json",
+  "jest.config.json",
+  "jest.config.ts",
+  ".prettierrc.yaml",
+  "tsconfig.build.json",
+
+  // Git & Version Control
+  ".gitignore",
+  ".gitkeep",
+  ".gitmodules",
+  ".bzrignore",
+  ".hgignore",
+  ".svnignore",
+  ".dockerignore",
+
+  // Container & Deployment
+  "Dockerfile",
+  "docker-compose.yml",
+  "docker-compose.yaml",
+  "Procfile",
+
+  // Runtime Version Files
+  ".nvmrc",
+  ".node-version",
+  ".ruby-version",
+  ".python-version",
+
+  // Other Language Files
+  "Rakefile",
+  "Gemfile",
+  "Gemfile.lock",
+  "requirements.txt",
+  "setup.py",
+  "pyproject.toml",
+  ".pylintrc",
+  ".flake8",
+  ".mypy.ini",
+  "tox.ini",
+  "pytest.ini",
+
+  // Git Hooks & Pre-commit
+  ".pre-commit-config.yaml",
+  ".commitlintrc",
+  ".commitlintrc.js",
+  ".commitlintrc.json",
+  ".huskyrc",
+  ".huskyrc.js",
+  ".huskyrc.json",
+  ".lintstagedrc",
+  ".lintstagedrc.js",
+  ".lintstagedrc.json",
+  "lint-staged.config.js",
+
+  // Documentation Tools
+  ".remarkrc",
+  ".remarkrc.js",
+  ".remarkrc.json",
+  ".markdownlint.json",
+  ".markdownlint.yaml",
+  ".markdownlint.yml",
+
+  // Build Tools
+  "rollup.config.js",
+  "rollup.config.ts",
+  "webpack.config.js",
+  "webpack.config.ts",
+  "vite.config.js",
+  "vite.config.ts",
+  "vitest.config.js",
+  "vitest.config.ts",
+
+  // Bundle Analysis & Performance
+  ".size-limit.json",
+  "size-limit.config.js",
+  ".size-snapshot.json",
+  "bundlesize.config.js",
+  ".bundlewatch.config.js",
+
+  // Testing Frameworks
+  "ava.config.js",
+  "ava.config.json",
+  ".taprc",
+  "tap-snapshots",
+
+  // Coverage Tools
+  ".c8rc",
+  ".c8rc.js",
+  ".c8rc.json",
+  ".nycrc",
+  ".nycrc.js",
+  ".nycrc.json",
+  "nyc.config.js",
+  ".istanbul.yml",
+
+  // Repository Management
+  ".github_changelog_generator",
+  ".dependabot.yml",
+  ".renovaterc",
+  ".renovaterc.js",
+  ".renovaterc.json",
+  "renovate.json",
+  ".greenkeeper.json",
+
+  // CI/CD Services
+  "codefresh.yml",
+  "shippable.yml",
+  "wercker.yml",
+  ".drone.yml",
+  "azure-pipelines.yml",
+  "buildkite.yml",
+
+  // Code Quality Services
+  ".codeclimate.yml",
+  ".scrutinizer.yml",
+  ".sonarqube.yml",
+  "sonar-project.properties",
+  ".bettercodehub.yml",
+  ".codacy.yml",
+  "codecov.yml",
+  ".codecov.yml",
+
+  // Framework/Library Build Outputs
+  ".storybook",
+  "storybook-static",
+  ".next",
+  ".nuxt",
+  ".cache",
+  ".parcel-cache",
+  "dist",
+  "build",
+  "lib",
+  "esm",
+  "umd",
+  "cjs",
+  "es",
+  "types",
+  "typings",
+
+  // Source Maps & Minified Files
+  "*.d.ts.map",
+  "*.js.map",
+  "*.css.map",
+  "*.min.js",
+  "*.min.css",
+
+  // Environment Files
+  ".env.example",
+  ".env.local",
+  ".env.development",
+  ".env.production",
+  ".env.test",
+] as const;
+
 export const DefaultDirectories = [
   "__tests__",
   "test",

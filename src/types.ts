@@ -18,4 +18,7 @@ export interface PrunerOptions {
   workspace?: boolean;
   workspaceRoot?: string;
   includeRoot?: boolean;
+  experimental?: {
+    defaultFiles?: boolean;
+  };
 }
