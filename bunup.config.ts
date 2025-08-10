@@ -30,20 +30,28 @@ const createFooter = () =>
 // https://github.com/ali-master/prune-mod
 `.trim();
 
-const BASE_CONFIG: DefineConfigItem = {
-  entry: ["src/cli.ts"],
-  format: ["esm"],
-  footer: createFooter(),
-  clean: false,
-  dts: false,
+const MINIFY_OPTIONS: Pick<
+  DefineConfigItem,
+  "clean" | "minify" | "minifyWhitespace" | "minifyIdentifiers" | "minifySyntax"
+> = {
+  clean: true,
   minify: true,
   minifyWhitespace: true,
   minifyIdentifiers: true,
   minifySyntax: true,
+};
+const CLI_BASE_CONFIG: DefineConfigItem = {
+  entry: ["src/cli.ts"],
+  format: ["esm"],
+  footer: createFooter(),
+  dts: false,
   plugins: [shims()],
-  define: {
-    VERSION: JSON.stringify(version),
+  env: {
+    VERSION: version,
+    COMMIT_HASH: commitHash,
+    BUILD_TIME: buildTime,
   },
+  ...MINIFY_OPTIONS,
 };
 /**
  * @internal
@@ -56,17 +64,10 @@ const config = defineConfig([
     name: "Runtime Detector",
     target: "node",
     banner: `#!/usr/bin/env node`,
-    clean: true,
     dts: false,
-    minify: true,
-    minifyWhitespace: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
     footer: createFooter(),
     plugins: [shims()],
-    define: {
-      VERSION: JSON.stringify(version),
-    },
+    ...MINIFY_OPTIONS,
   },
   {
     entry: ["src/index.ts"],
@@ -75,26 +76,19 @@ const config = defineConfig([
     name: "Library Build",
     target: "node",
     banner: `#!/usr/bin/env node`,
-    clean: true,
     dts: true,
-    minify: true,
-    minifyWhitespace: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
     footer: createFooter(),
     plugins: [shims(), exports()],
-    define: {
-      VERSION: JSON.stringify(version),
-    },
+    ...MINIFY_OPTIONS,
   },
   {
-    ...BASE_CONFIG,
+    ...CLI_BASE_CONFIG,
     outDir: "./dist/node",
     name: "NodeJS Build",
     target: "node",
   },
   {
-    ...BASE_CONFIG,
+    ...CLI_BASE_CONFIG,
     outDir: "./dist/bun",
     name: "Bun Build",
     target: "bun",

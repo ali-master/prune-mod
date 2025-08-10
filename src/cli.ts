@@ -3,9 +3,6 @@ import { logger } from "./logger";
 import { Pruner } from "./prune";
 import { formatBytes, formatNumber, formatDuration, output } from "./utils";
 
-// Version will be injected during build
-const VERSION = "unknown version";
-
 const { values, positionals } = parseArgs({
   options: {
     verbose: {
@@ -113,7 +110,12 @@ async function main() {
   }
 
   if (values.version) {
-    logger.info(VERSION);
+    const VERSION = process.env.VERSION || "unknown";
+    const COMMIT_HASH = process.env.COMMIT_HASH || "unknown";
+    const BUILD_TIME = process.env.BUILD_TIME || new Date().toISOString();
+
+    logger.info(`v${VERSION} (${COMMIT_HASH}) - Built on ${BUILD_TIME}`);
+
     process.exit(0);
   }
 
