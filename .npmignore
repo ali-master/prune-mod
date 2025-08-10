@@ -9,5 +9,5 @@
 dist/**/*.tsbuildinfo
 
 # Include the assets folder and its contents
-!assets
-!assets/**
+assets
+!assets/logo.png
