@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/ali-master/prune-mod/compare/v0.0.12...v0.0.13) (2025-08-10)
+
+
+### Features
+
+* enhance runtime detection and process management ([6b3beeb](https://github.com/ali-master/prune-mod/commit/6b3beebf8d6e0e46f29fd4bf6d13af05e1c58e09))
+
 ### [0.0.12](https://github.com/ali-master/prune-mod/compare/v0.0.11...v0.0.12) (2025-08-10)
 
 
