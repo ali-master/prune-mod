@@ -1,7 +1,7 @@
 {
   "name": "@usex/prune-mod",
   "description": "Fast and efficient tool to reduce node_modules size by up to 60%. Safely removes unnecessary files like docs, tests, and dev configs while keeping your app working perfectly. Ideal for serverless, Docker, and deployment optimization.",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "type": "module",
   "files": [
     "dist",

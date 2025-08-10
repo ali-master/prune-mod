@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/ali-master/prune-mod/compare/v0.0.11...v0.0.12) (2025-08-10)
+
+
+### Features
+
+* add update notifier and enhance version info in CLI ([f879999](https://github.com/ali-master/prune-mod/commit/f87999957f5b0de80a9899130eb84a0367f425bc))
+
 ### [0.0.11](https://github.com/ali-master/prune-mod/compare/v0.0.10...v0.0.11) (2025-08-10)
 
 ### [0.0.10](https://github.com/ali-master/prune-mod/compare/v0.0.9...v0.0.10) (2025-08-10)
