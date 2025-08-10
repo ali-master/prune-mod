@@ -82,15 +82,15 @@
     "test:debug:watch": "bun run test:debug --watch --poolOptions.threads.isolate false",
     "format": "prettier --write src tests",
     "format:check": "prettier --check src tests",
-    "prepublish:next": "bun run build",
-    "publish:next": "bun publish --tag next",
+    "prepublish:beta": "bun run build",
+    "publish:beta": "bun publish --tag beta",
     "prepublish:npm": "bun run build",
     "publish:npm": "bun publish",
     "prerelease": "bun run test",
-    "release": "bun run build",
-    "postrelease": "standard-version && git push --follow-tags origin master && bun publish",
-    "release:beta": "bun run build",
-    "postrelease:beta": "standard-version --prerelease beta"
+    "release": "standard-version",
+    "postrelease": "bun run build && git push --follow-tags origin master && bun publish",
+    "release:beta": "standard-version --prerelease beta",
+    "postrelease:beta": "bun run build && git push --follow-tags origin master && bun publish --tag beta"
   },
   "dependencies": {
     "chalk": "^5.5.0",
