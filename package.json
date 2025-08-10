@@ -68,7 +68,6 @@
   },
   "sideEffects": false,
   "scripts": {
-    "prepare": "bun run build",
     "build": "bunup",
     "dev": "bunup --watch",
     "clean": "bunx rimraf dist",
@@ -91,8 +90,7 @@
     "release": "bun run build",
     "postrelease": "standard-version && git push --follow-tags origin master && bun publish",
     "release:beta": "bun run build",
-    "postrelease:beta": "standard-version --prerelease beta",
-    "preinstall": "bunx only-allow bun"
+    "postrelease:beta": "standard-version --prerelease beta"
   },
   "dependencies": {
     "chalk": "^5.5.0",
