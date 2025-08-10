@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/ali-master/prune-mod/compare/v0.0.3...v0.0.4) (2025-08-10)
+
+
+### Features
+
+* update constants for additional file types ([92e03bf](https://github.com/ali-master/prune-mod/commit/92e03bf2d3c6c730a8027e5503345863318c1280))
+
+
+### Bug Fixes
+
+* **package.json:** unable to install because of prepare and preinstall scripts ([fcd6fde](https://github.com/ali-master/prune-mod/commit/fcd6fde841c4104a7e8f0070424898056e5d90a6))
+
 ### [0.0.3](https://github.com/ali-master/prune-mod/compare/v0.0.2...v0.0.3) (2025-08-09)
 
 
