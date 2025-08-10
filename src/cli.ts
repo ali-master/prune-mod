@@ -3,6 +3,9 @@ import { logger } from "./logger";
 import { Pruner } from "./prune";
 import { formatBytes, formatNumber, formatDuration, output } from "./utils";
 
+// Version will be injected during build
+const VERSION = "unknown version";
+
 const { values, positionals } = parseArgs({
   options: {
     verbose: {
@@ -28,6 +31,12 @@ const { values, positionals } = parseArgs({
       short: "h",
       default: false,
       description: "Show help",
+    },
+    version: {
+      type: "boolean",
+      short: "V",
+      default: false,
+      description: "Show version",
     },
     "dry-run": {
       type: "boolean",
@@ -78,6 +87,7 @@ Options:
   --no-root                       Skip pruning the root node_modules in workspace mode
   --experimental-default-files    Enable experimental extended file list for more aggressive pruning
   -h, --help                      Show help
+  -V, --version                   Show version
 
 Examples:
   prune-mod                    # Prune node_modules in current directory
@@ -99,6 +109,11 @@ Experimental Examples:
 async function main() {
   if (values.help) {
     showHelp();
+    process.exit(0);
+  }
+
+  if (values.version) {
+    logger.info(VERSION);
     process.exit(0);
   }
 

@@ -41,6 +41,9 @@ const BASE_CONFIG: DefineConfigItem = {
   minifyIdentifiers: true,
   minifySyntax: true,
   plugins: [shims()],
+  define: {
+    VERSION: JSON.stringify(version),
+  },
 };
 /**
  * @internal
@@ -61,6 +64,9 @@ const config = defineConfig([
     minifySyntax: true,
     footer: createFooter(),
     plugins: [shims()],
+    define: {
+      VERSION: JSON.stringify(version),
+    },
   },
   {
     entry: ["src/index.ts"],
@@ -77,6 +83,9 @@ const config = defineConfig([
     minifySyntax: true,
     footer: createFooter(),
     plugins: [shims(), exports()],
+    define: {
+      VERSION: JSON.stringify(version),
+    },
   },
   {
     ...BASE_CONFIG,
