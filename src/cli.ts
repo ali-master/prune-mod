@@ -1,7 +1,13 @@
 import { parseArgs } from "node:util";
 import { logger } from "./logger";
 import { Pruner } from "./prune";
+import updateNotifier from "update-notifier";
 import { formatBytes, formatNumber, formatDuration, output } from "./utils";
+
+const VERSION = process.env.VERSION || "unknown";
+const COMMIT_HASH = process.env.COMMIT_HASH || "unknown";
+const BUILD_TIME = process.env.BUILD_TIME || new Date().toISOString();
+const PKG_NAME = process.env.PKG_NAME || "";
 
 const { values, positionals } = parseArgs({
   options: {
@@ -110,10 +116,6 @@ async function main() {
   }
 
   if (values.version) {
-    const VERSION = process.env.VERSION || "unknown";
-    const COMMIT_HASH = process.env.COMMIT_HASH || "unknown";
-    const BUILD_TIME = process.env.BUILD_TIME || new Date().toISOString();
-
     logger.info(`v${VERSION} (${COMMIT_HASH}) - Built on ${BUILD_TIME}`);
 
     process.exit(0);
@@ -165,4 +167,15 @@ async function main() {
   }
 }
 
+updateNotifier({
+  pkg: {
+    name: PKG_NAME,
+    version: VERSION,
+  },
+  updateCheckInterval: 1000 * 60 * 60 * 24, // Check daily
+  shouldNotifyInNpmScript: true,
+}).notify({
+  isGlobal: true,
+  defer: false, // Show immediately
+});
 main().catch((error) => logger.error(error));

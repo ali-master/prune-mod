@@ -1,11 +1,8 @@
 import { defineConfig, type DefineConfigItem } from "bunup";
 import { shims, exports } from "bunup/plugins";
-import { readFileSync, existsSync } from "fs";
+import { existsSync } from "fs";
 import { execSync } from "child_process";
-
-// Get version from package.json
-const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
-const version = pkg.version;
+import { version, name as pkg_name } from "package.json" assert { type: "json" };
 
 // Get git commit hash
 let commitHash = "unknown";
@@ -50,6 +47,7 @@ const CLI_BASE_CONFIG: DefineConfigItem = {
     VERSION: version,
     COMMIT_HASH: commitHash,
     BUILD_TIME: buildTime,
+    PKG_NAME: pkg_name,
   },
   ...MINIFY_OPTIONS,
 };
