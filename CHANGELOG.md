@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/ali-master/prune-mod/compare/v0.0.7...v0.0.8) (2025-08-10)
+
+
+### Bug Fixes
+
+* update .npmignore to include logo.png and exclude other assets ([73756c1](https://github.com/ali-master/prune-mod/commit/73756c1504a117103f709ec6ab173379fa6353aa))
+
 ### [0.0.7](https://github.com/ali-master/prune-mod/compare/v0.0.6...v0.0.7) (2025-08-10)
 
 
