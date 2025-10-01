@@ -12,6 +12,7 @@ A fast and efficient tool to reduce node_modules size by removing unnecessary fi
 [![npm version](https://badge.fury.io/js/@usex%2Fprune-mod.svg)](https://badge.fury.io/js/@usex%2Fprune-mod)
 [![CI/CD Pipeline](https://github.com/ali-master/prune-mod/actions/workflows/ci.yml/badge.svg)](https://github.com/ali-master/prune-mod/actions/workflows/ci.yml)
 
+<a href="https://www.producthunt.com/products/prune-mod?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-prune&#0045;mod" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1012152&theme=light&t=1759345850493" alt="Prune&#0032;Mod - Fast&#0032;and&#0032;efficient&#0032;tool&#0032;to&#0032;reduce&#0032;node&#0095;modules&#0032;size | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 </div>
 
 
