@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/ali-master/prune-mod/compare/v0.0.13...v0.0.14) (2025-10-01)
+
+
+### Features
+
+* add new SVG assets for branding and social preview ([40b74b0](https://github.com/ali-master/prune-mod/commit/40b74b089f2bf2653a6933990eb1ab7369f6a6dd))
+* add Product Hunt badge to README ([7371b26](https://github.com/ali-master/prune-mod/commit/7371b26eddff30983b840e584de0fab23d48077e))
+* enhance CI configuration and add new features ([49317d9](https://github.com/ali-master/prune-mod/commit/49317d965ed9880287063824aaadc09180b7a06a))
+
 ### [0.0.13](https://github.com/ali-master/prune-mod/compare/v0.0.12...v0.0.13) (2025-08-10)
 
 
